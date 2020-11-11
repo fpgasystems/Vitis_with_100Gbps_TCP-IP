@@ -1,0 +1,38 @@
+`ifndef NETWORK_TYPES_SVH
+`define NETWORK_TYPES_SVH
+
+`define DRAM_EN${DRAM_EN}${TCP_STACK_EN}
+
+`ifdef DRAM_EN1
+`define USE_DDR
+`endif
+
+`ifdef DRAM_EN10
+`define USE_DDR
+`endif
+
+`ifdef DRAM_EN01
+`define USE_DDR
+`endif
+
+`define USE_${NETWORK_INTERFACE}G
+
+parameter NETWORK_STACK_WIDTH = 512;
+parameter UDP_META_WIDTH = 176;
+
+// TCP/IP
+parameter TCP_STACK_EN = ${TCP_STACK_EN};
+parameter TCP_RX_BYPASS_EN = ${TCP_STACK_RX_DDR_BYPASS_EN};
+
+//UDP/IP
+parameter UDP_STACK_EN = ${UDP_STACK_EN};
+
+//RoCEv2
+parameter ROCE_STACK_EN = 0;
+
+//DRAM
+parameter NUM_DDR_CHANNELS = 2;
+parameter NUM_TCP_CHANNELS = 2;
+parameter NUM_NET_PORTS = 2;
+
+`endif

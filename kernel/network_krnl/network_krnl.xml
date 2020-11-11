@@ -1,0 +1,72 @@
+<!--   
+<?xml version="1.0" encoding="UTF-8"?>
+<root versionMajor="1" versionMinor="6">
+  <kernel name="network_krnl" language="ip_c" vlnv="ethz.ch:kernel:network_krnl:1.0" attributes="" preferredWorkGroupSizeMultiple="0" workGroupSize="1" interrupt="true" hwControlProtocol="ap_ctrl_hs">
+    <ports>
+      <port name="s_axi_control" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x0"/>
+      <port name="m00_axi" mode="master" range="0xFFFFFFFFFFFFFFFF" dataWidth="512" portType="addressable" base="0x0"/>
+      <port name="m01_axi" mode="master" range="0xFFFFFFFFFFFFFFFF" dataWidth="512" portType="addressable" base="0x0"/>
+    </ports>
+    <args>
+      <arg name="ip_addr" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x010" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="board_number" addressQualifier="0" id="1" port="s_axi_control" size="0x4" offset="0x018" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="arp" addressQualifier="0" id="2" port="s_axi_control" size="0x4" offset="0x020" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="axi00_ptr0" addressQualifier="1" id="3" port="m00_axi" size="0x8" offset="0x028" type="int*" hostOffset="0x0" hostSize="0x8"/> 
+      <arg name="axi01_ptr0" addressQualifier="1" id="4" port="m01_axi" size="0x8" offset="0x034" type="int*" hostOffset="0x0" hostSize="0x8"/> 
+    </args>
+  </kernel>
+</root> -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<root versionMajor="1" versionMinor="6">
+  <kernel name="network_krnl" language="ip_c" vlnv="ethz.ch:kernel:network_krnl:1.0" attributes="" preferredWorkGroupSizeMultiple="0" workGroupSize="1" interrupt="true" hwControlProtocol="ap_ctrl_hs">
+    <ports>
+      <port name="s_axi_control" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x0"/>
+      <port name="m00_axi" mode="master" range="0xFFFFFFFFFFFFFFFF" dataWidth="512" portType="addressable" base="0x0"/>
+      <port name="m01_axi" mode="master" range="0xFFFFFFFFFFFFFFFF" dataWidth="512" portType="addressable" base="0x0"/>
+      <port name="m_axis_udp_rx" mode="write_only" dataWidth="512" portType="stream"/>
+      <port name="s_axis_udp_tx" mode="read_only" dataWidth="512" portType="stream"/>
+      <port name="m_axis_udp_rx_meta" mode="write_only" dataWidth="256" portType="stream"/>
+      <port name="s_axis_udp_tx_meta" mode="read_only" dataWidth="256" portType="stream"/>
+      <port name="s_axis_tcp_listen_port" mode="read_only" dataWidth="16" portType="stream"/>
+      <port name="m_axis_tcp_port_status" mode="write_only" dataWidth="8" portType="stream"/>
+      <port name="s_axis_tcp_open_connection" mode="read_only" dataWidth="64" portType="stream"/>
+      <port name="m_axis_tcp_open_status" mode="write_only" dataWidth="32" portType="stream"/>
+      <port name="s_axis_tcp_close_connection" mode="read_only" dataWidth="16" portType="stream"/>
+      <port name="m_axis_tcp_notification" mode="write_only" dataWidth="128" portType="stream"/>
+      <port name="s_axis_tcp_read_pkg" mode="read_only" dataWidth="32" portType="stream"/>
+      <port name="m_axis_tcp_rx_meta" mode="write_only" dataWidth="16" portType="stream"/>
+      <port name="m_axis_tcp_rx_data" mode="write_only" dataWidth="512" portType="stream"/>
+      <port name="s_axis_tcp_tx_meta" mode="read_only" dataWidth="32" portType="stream"/>
+      <port name="s_axis_tcp_tx_data" mode="read_only" dataWidth="512" portType="stream"/>
+      <port name="m_axis_tcp_tx_status" mode="write_only" dataWidth="64" portType="stream"/>
+      <port name="axis_net_tx" mode="write_only" dataWidth="512" portType="stream"/>
+      <port name="axis_net_rx" mode="read_only" dataWidth="512" portType="stream"/>
+    </ports>
+    <args>
+      <arg name="ip_addr" addressQualifier="0" id="0" port="s_axi_control" size="0x4" offset="0x010" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="board_number" addressQualifier="0" id="1" port="s_axi_control" size="0x4" offset="0x018" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="arp" addressQualifier="0" id="2" port="s_axi_control" size="0x4" offset="0x020" type="uint" hostOffset="0x0" hostSize="0x4"/> 
+      <arg name="axi00_ptr0" addressQualifier="1" id="3" port="m00_axi" size="0x8" offset="0x028" type="int*" hostOffset="0x0" hostSize="0x8"/> 
+      <arg name="axi01_ptr0" addressQualifier="1" id="4" port="m01_axi" size="0x8" offset="0x034" type="int*" hostOffset="0x0" hostSize="0x8"/> 
+      <arg name="m_axis_udp_rx" addressQualifier="4" id="5" port="m_axis_udp_rx" size="0x4" offset="0x03c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+      <arg name="s_axis_udp_tx" addressQualifier="4" id="6" port="s_axis_udp_tx" size="0x4" offset="0x044" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+      <arg name="m_axis_udp_rx_meta" addressQualifier="4" id="7" port="m_axis_udp_rx_meta" size="0x4" offset="0x04c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;256,0,0,0>>&amp;" />
+      <arg name="s_axis_udp_tx_meta" addressQualifier="4" id="8" port="s_axis_udp_tx_meta" size="0x4" offset="0x054" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;256,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_listen_port" addressQualifier="4" id="9" port="s_axis_tcp_listen_port" size="0x4" offset="0x05c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;16,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_port_status" addressQualifier="4" id="10" port="m_axis_tcp_port_status" size="0x4" offset="0x064" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;8,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_open_connection" addressQualifier="4" id="11" port="s_axis_tcp_open_connection" size="0x4" offset="0x06c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;64,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_open_status" addressQualifier="4" id="12" port="m_axis_tcp_open_status" size="0x4" offset="0x074" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;32,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_close_connection" addressQualifier="4" id="13" port="s_axis_tcp_close_connection" size="0x4" offset="0x07c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;16,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_notification" addressQualifier="4" id="14" port="m_axis_tcp_notification" size="0x4" offset="0x084" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;128,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_read_pkg" addressQualifier="4" id="15" port="s_axis_tcp_read_pkg" size="0x4" offset="0x08c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;32,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_rx_meta" addressQualifier="4" id="16" port="m_axis_tcp_rx_meta" size="0x4" offset="0x094" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;16,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_rx_data" addressQualifier="4" id="17" port="m_axis_tcp_rx_data" size="0x4" offset="0x09c" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_tx_meta" addressQualifier="4" id="18" port="s_axis_tcp_tx_meta" size="0x4" offset="0x0a4" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;32,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_tx_data" addressQualifier="4" id="19" port="s_axis_tcp_tx_data" size="0x4" offset="0x0ac" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+      <arg name="m_axis_tcp_tx_status" addressQualifier="4" id="20" port="m_axis_tcp_tx_status" size="0x4" offset="0x0b4" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;64,0,0,0>>&amp;" />
+      <arg name="axis_net_tx" addressQualifier="4" id="21" port="axis_net_tx" size="0x4" offset="0x0bc" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+      <arg name="axis_net_rx" addressQualifier="4" id="22" port="axis_net_rx" size="0x4" offset="0x0c4" hostOffset="0x0" hostSize="0x4" type="stream&lt;qdma_axis&lt;512,0,0,0>>&amp;" />
+    </args>
+  </kernel>
+</root>
