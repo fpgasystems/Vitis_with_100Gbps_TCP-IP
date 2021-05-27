@@ -36,9 +36,9 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DATA_SIZE 62500000
 
 //Set IP address of FPGA
-#define IP_ADDR 0x0A01D498
-#define BOARD_NUMBER 0
-#define ARP 0x0A01D498
+// #define IP_ADDR 0x0A01D498
+// #define BOARD_NUMBER 0
+// #define ARP 0x0A01D498
 
 void wait_for_enter(const std::string &msg) {
     std::cout << msg << std::endl;
@@ -47,7 +47,7 @@ void wait_for_enter(const std::string &msg) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [<#RxByte> <Port>]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [<#RxByte> <Port> <local_IP> <boardNum>]" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -59,6 +59,37 @@ int main(int argc, char **argv) {
 
     cl::Kernel user_kernel;
     cl::Kernel network_kernel;
+
+    uint32_t local_IP = 0x0A01D498;
+    uint32_t boardNum = 1;
+
+    
+
+    if (argc >= 5)
+    {
+        std::string s = argv[4];
+        std::string delimiter = ".";
+        int ip [4];
+        size_t pos = 0;
+        std::string token;
+        int i = 0;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            token = s.substr(0, pos);
+            ip [i] = stoi(token);
+            s.erase(0, pos + delimiter.length());
+            i++;
+        }
+        ip[i] = stoi(s); 
+        local_IP = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+    }
+
+    if (argc >= 6)
+    {
+        boardNum = strtol(argv[5], NULL, 10);
+    }
+
+    printf("local_IP:%x, boardNum:%d\n", local_IP, boardNum);
+
 
     auto size = DATA_SIZE;
     
@@ -110,9 +141,9 @@ int main(int argc, char **argv) {
 
 
     // Set network kernel arguments
-    OCL_CHECK(err, err = network_kernel.setArg(0, IP_ADDR)); // Default IP address
-    OCL_CHECK(err, err = network_kernel.setArg(1, BOARD_NUMBER)); // Board number
-    OCL_CHECK(err, err = network_kernel.setArg(2, ARP)); // ARP lookup
+    OCL_CHECK(err, err = network_kernel.setArg(0, local_IP)); // Default IP address
+    OCL_CHECK(err, err = network_kernel.setArg(1, boardNum)); // Board number
+    OCL_CHECK(err, err = network_kernel.setArg(2, local_IP)); // ARP lookup
 
     OCL_CHECK(err,
               cl::Buffer buffer_r1(context,

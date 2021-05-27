@@ -148,7 +148,7 @@ set_property physical_name ap_clk [ipx::get_port_maps CLK -of_objects [ipx::get_
 # set value_resolve_type 'immediate' if the frequency cannot change. 
 #set_property value_resolve_type immediate $clkbifparam
 
-ipx::associate_bus_interfaces -busif s_axi_control -clock ap_clk [ipx::current_core]
+# ipx::associate_bus_interfaces -busif s_axi_control -clock ap_clk [ipx::current_core]
 ipx::add_bus_interface gt_serial_port [ipx::current_core]
 set_property interface_mode master [ipx::get_bus_interfaces gt_serial_port -of_objects [ipx::current_core]]
 set_property abstraction_type_vlnv xilinx.com:interface:gt_rtl:1.0 [ipx::get_bus_interfaces gt_serial_port -of_objects [ipx::current_core]]

@@ -13,20 +13,24 @@ file(MAKE_DIRECTORY ${IPREPO_DIR})
 # Device
 if(FDEV_NAME STREQUAL "u280")
     set(FPGA_PART "xcu280-fsvh2892-2L-e" CACHE STRING "FPGA device")
-    set(NETWORK_BANDWIDTH 100 CACHE STRING "Network bandwidth")
-    set(NETWORK_INTERFACE 100 CACHE STRING "Network bandwidth")
-    set(DATA_WIDTH 64 CACHE STRING "Width of data path in bytes")
-    set(CLOCK_PERIOD 3.2 CACHE STRING "Target clock period in nanoseconds")
-    set(DEVICE "/opt/xilinx/platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm")
+# 	 set(DEVICE "/opt/xilinx/platforms/xilinx_u280_xdma_201920_3/xilinx_u280_xdma_201920_3.xpfm")
+elseif(FDEV_NAME STREQUAL "u250")
+	set(FPGA_PART "xcu250-figd2104-2L-e" CACHE STRING "FPGA device")
 else()
     message(FATAL_ERROR "Target device not supported.")
 endif()
 
+
+
 # Config
-set(TCP_STACK_EN 0 CACHE BOOL "Enable TCP/IP stack")
+set(NETWORK_BANDWIDTH 100 CACHE STRING "Network bandwidth")
+set(NETWORK_INTERFACE 100 CACHE STRING "Network bandwidth")
+set(DATA_WIDTH 64 CACHE STRING "Width of data path in bytes")
+set(CLOCK_PERIOD 3.2 CACHE STRING "Target clock period in nanoseconds")
+set(TCP_STACK_EN 1 CACHE BOOL "Enable TCP/IP stack")
 set(UDP_STACK_EN 1 CACHE BOOL "Enable UDP/IP stack")
 set(TCP_STACK_RX_DDR_BYPASS_EN 1 CACHE BOOL "Enabling DDR bypass on the RX path")
-
+set(TCP_STACK_MSS 4096 CACHE STRING "Maximum Segment Size (MSS)")
 
 
 

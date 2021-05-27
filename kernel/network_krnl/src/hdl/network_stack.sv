@@ -1013,24 +1013,24 @@ always @ (posedge net_clk) begin
   end
 end
 
-// ila_network_controller inst_ila_network_crtl (
-//     .clk(net_clk),
-//     .probe0(exe_cycle[31:0]), //32
-//     .probe1(s_axil.awvalid),
-//     .probe2(write_cmd_ready_down_0[31:0]), //32
-//     .probe3(ap_start),
-//     .probe4(ap_done),
-//     .probe5(write_sts_ready_down_0[31:0]), //32
-//     .probe6(axis_host_arp_lookup_request.data), //32
-//     .probe7(write_data_ready_down_0[31:0]), //32
-//     .probe8(ap_start_pulse),
-//     .probe9(interrupt),
-//     .probe10(ap_ready),
-//     .probe11(ap_idle),
-//     .probe12(s_axil.awready), 
-//     .probe13(s_axil.wvalid),
-//     .probe14(s_axil.wready)
-// );
+ ila_network_controller inst_ila_network_crtl (
+     .clk(net_clk),
+     .probe0(exe_cycle[31:0]), //32
+     .probe1(s_axil.awvalid),
+     .probe2(write_cmd_ready_down_0[31:0]), //32
+     .probe3(ap_start),
+     .probe4(ap_done),
+     .probe5(set_ip_addr_data), //32
+     .probe6(axis_host_arp_lookup_request.data), //32
+     .probe7(set_board_number_data), //32
+     .probe8(ap_start_pulse),
+     .probe9(interrupt),
+     .probe10(ap_ready),
+     .probe11(ap_idle),
+     .probe12(s_axil.awready), 
+     .probe13(s_axil.wvalid),
+     .probe14(s_axil.wready)
+ );
 
 /*
  * Statistics

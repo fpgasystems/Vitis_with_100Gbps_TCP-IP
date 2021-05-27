@@ -56,17 +56,20 @@ set board [lindex $words 1]
 
 if {[string compare -nocase $board "u280"] == 0} {
 set projPart "xcu280-fsvh2892-2L-e"
+# set projPart "xcu250-figd2104-2L-e"
 } else {
     puts "Unknown board $board"
     exit 
 }
+
+
 
 set projName kernel_pack
 create_project -force $projName $path_to_tmp_project -part $projPart
 
 add_files -norecurse [glob $path_to_hdl/hdl/*.v $path_to_hdl/hdl/*.sv $path_to_hdl/hdl/*.svh ]
 add_files -norecurse [glob $path_to_common/types/*.v $path_to_common/types/*.sv $path_to_common/types/*.svh ]
-#add_files -norecurse [glob /home/zhenhao/vitis_network/build/fpga-network-stack/hls/toe/toe_prj/solution1/impl/ip/hdl/verilog/*.v]
+# add_files -norecurse [glob /home/zhenhao/vitis_network/build/fpga-network-stack/hls/toe/toe_prj/solution1/impl/ip/hdl/verilog/*.v]
 
 set_property top network_krnl [current_fileset]
 update_compile_order -fileset sources_1
@@ -154,10 +157,10 @@ set_property interface_mode master [ipx::get_bus_interfaces m_axis_tcp_open_stat
 set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces m_axis_tcp_open_status -of_objects [ipx::current_core]]
 ipx::associate_bus_interfaces -busif m_axis_tcp_open_status -clock ap_clk [ipx::current_core]
 
-ipx::add_bus_interface s_axis_tcp_close_connection [ipx::current_core]
-set_property interface_mode slave [ipx::get_bus_interfaces s_axis_tcp_close_connection -of_objects [ipx::current_core]]
-set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_tcp_close_connection -of_objects [ipx::current_core]]
-ipx::associate_bus_interfaces -busif s_axis_tcp_close_connection -clock ap_clk [ipx::current_core]
+# ipx::add_bus_interface s_axis_tcp_close_connection [ipx::current_core]
+# set_property interface_mode slave [ipx::get_bus_interfaces s_axis_tcp_close_connection -of_objects [ipx::current_core]]
+# set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_tcp_close_connection -of_objects [ipx::current_core]]
+# ipx::associate_bus_interfaces -busif s_axis_tcp_close_connection -clock ap_clk [ipx::current_core]
 
 ipx::add_bus_interface m_axis_tcp_notification [ipx::current_core]
 set_property interface_mode master [ipx::get_bus_interfaces m_axis_tcp_notification -of_objects [ipx::current_core]]
@@ -196,25 +199,25 @@ ipx::associate_bus_interfaces -busif m_axis_tcp_tx_status -clock ap_clk [ipx::cu
 
 
 #UDP interfaces
-ipx::add_bus_interface m_axis_udp_rx [ipx::current_core]
-set_property interface_mode master [ipx::get_bus_interfaces m_axis_udp_rx -of_objects [ipx::current_core]]
-set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces m_axis_udp_rx -of_objects [ipx::current_core]]
-ipx::associate_bus_interfaces -busif m_axis_udp_rx -clock ap_clk [ipx::current_core]
+# ipx::add_bus_interface m_axis_udp_rx [ipx::current_core]
+# set_property interface_mode master [ipx::get_bus_interfaces m_axis_udp_rx -of_objects [ipx::current_core]]
+# set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces m_axis_udp_rx -of_objects [ipx::current_core]]
+# ipx::associate_bus_interfaces -busif m_axis_udp_rx -clock ap_clk [ipx::current_core]
 
-ipx::add_bus_interface s_axis_udp_tx [ipx::current_core]
-set_property interface_mode slave [ipx::get_bus_interfaces s_axis_udp_tx -of_objects [ipx::current_core]]
-set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_udp_tx -of_objects [ipx::current_core]]
-ipx::associate_bus_interfaces -busif s_axis_udp_tx -clock ap_clk [ipx::current_core]
+# ipx::add_bus_interface s_axis_udp_tx [ipx::current_core]
+# set_property interface_mode slave [ipx::get_bus_interfaces s_axis_udp_tx -of_objects [ipx::current_core]]
+# set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_udp_tx -of_objects [ipx::current_core]]
+# ipx::associate_bus_interfaces -busif s_axis_udp_tx -clock ap_clk [ipx::current_core]
 
-ipx::add_bus_interface m_axis_udp_rx_meta [ipx::current_core]
-set_property interface_mode master [ipx::get_bus_interfaces m_axis_udp_rx_meta -of_objects [ipx::current_core]]
-set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces m_axis_udp_rx_meta -of_objects [ipx::current_core]]
-ipx::associate_bus_interfaces -busif m_axis_udp_rx_meta -clock ap_clk [ipx::current_core]
+# ipx::add_bus_interface m_axis_udp_rx_meta [ipx::current_core]
+# set_property interface_mode master [ipx::get_bus_interfaces m_axis_udp_rx_meta -of_objects [ipx::current_core]]
+# set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces m_axis_udp_rx_meta -of_objects [ipx::current_core]]
+# ipx::associate_bus_interfaces -busif m_axis_udp_rx_meta -clock ap_clk [ipx::current_core]
 
-ipx::add_bus_interface s_axis_udp_tx_meta [ipx::current_core]
-set_property interface_mode slave [ipx::get_bus_interfaces s_axis_udp_tx_meta -of_objects [ipx::current_core]]
-set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_udp_tx_meta -of_objects [ipx::current_core]]
-ipx::associate_bus_interfaces -busif s_axis_udp_tx_meta -clock ap_clk [ipx::current_core]
+# ipx::add_bus_interface s_axis_udp_tx_meta [ipx::current_core]
+# set_property interface_mode slave [ipx::get_bus_interfaces s_axis_udp_tx_meta -of_objects [ipx::current_core]]
+# set_property abstraction_type_vlnv xilinx.com:interface:axis_rtl:1.0 [ipx::get_bus_interfaces s_axis_udp_tx_meta -of_objects [ipx::current_core]]
+# ipx::associate_bus_interfaces -busif s_axis_udp_tx_meta -clock ap_clk [ipx::current_core]
 
 # cmac interfaces
 ipx::add_bus_interface axis_net_tx [ipx::current_core]

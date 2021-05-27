@@ -19,6 +19,9 @@ set_property -dict [list CONFIG.TDATA_NUM_BYTES {4} CONFIG.FIFO_DEPTH {256} CONF
 create_ip -name axis_data_fifo -vendor xilinx.com -library ip -version 2.0 -module_name axis_data_fifo_64_d256
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {8} CONFIG.FIFO_DEPTH {256} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1} CONFIG.HAS_WR_DATA_COUNT {1} CONFIG.HAS_RD_DATA_COUNT {1} CONFIG.Component_Name {axis_data_fifo_64_d256}] [get_ips axis_data_fifo_64_d256]
 
+create_ip -name axis_data_fifo -vendor xilinx.com -library ip -version 2.0 -module_name axis_data_fifo_72_d256
+set_property -dict [list CONFIG.TDATA_NUM_BYTES {9} CONFIG.FIFO_DEPTH {256} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1} CONFIG.HAS_WR_DATA_COUNT {1} CONFIG.HAS_RD_DATA_COUNT {1} CONFIG.Component_Name {axis_data_fifo_72_d256}] [get_ips axis_data_fifo_72_d256]
+
 create_ip -name axis_data_fifo -vendor xilinx.com -library ip -version 2.0 -module_name axis_data_fifo_128_d1024 
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {16} CONFIG.FIFO_DEPTH {1024} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1} CONFIG.HAS_WR_DATA_COUNT {1} CONFIG.HAS_RD_DATA_COUNT {1} CONFIG.Component_Name {axis_data_fifo_128_d1024}] [get_ips axis_data_fifo_128_d1024]
 
@@ -200,7 +203,7 @@ set_property -dict [list CONFIG.C_NUM_OF_PROBES {15} CONFIG.C_PROBE14_WIDTH {32}
 update_compile_order -fileset sources_1
 
 create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_network_top2
-set_property -dict [list CONFIG.C_PROBE13_WIDTH {512} CONFIG.C_PROBE12_WIDTH {512} CONFIG.C_NUM_OF_PROBES {14} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1}] [get_ips ila_network_top2]
+set_property -dict [list CONFIG.C_NUM_OF_PROBES {12} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1}] [get_ips ila_network_top2]
 update_compile_order -fileset sources_1
 
 create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_network_controller
@@ -217,6 +220,16 @@ set_property -dict [list CONFIG.C_PROBE19_WIDTH {32} CONFIG.C_PROBE18_WIDTH {8} 
 
 create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_handler
 set_property -dict [list CONFIG.C_PROBE12_WIDTH {16} CONFIG.C_PROBE11_WIDTH {18} CONFIG.C_PROBE10_WIDTH {16} CONFIG.C_PROBE9_WIDTH {32} CONFIG.C_PROBE8_WIDTH {32} CONFIG.C_PROBE7_WIDTH {2}  CONFIG.C_DATA_DEPTH {1024} CONFIG.C_NUM_OF_PROBES {13} CONFIG.Component_Name {ila_handler} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1}] [get_ips ila_handler]
+
+create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_network_top_perf
+set_property -dict [list CONFIG.C_PROBE31_WIDTH {64} CONFIG.C_PROBE30_WIDTH {32} CONFIG.C_PROBE29_WIDTH {32} CONFIG.C_PROBE27_WIDTH {64} CONFIG.C_PROBE26_WIDTH {64} CONFIG.C_PROBE25_WIDTH {64} CONFIG.C_PROBE24_WIDTH {64}  CONFIG.C_DATA_DEPTH {1024} CONFIG.C_NUM_OF_PROBES {32} CONFIG.Component_Name {ila_network_top_perf} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1} CONFIG.C_PROBE31_MU_CNT {2} CONFIG.C_PROBE30_MU_CNT {8} CONFIG.C_PROBE29_MU_CNT {8} CONFIG.C_PROBE28_MU_CNT {2} CONFIG.C_PROBE27_MU_CNT {2} CONFIG.C_PROBE26_MU_CNT {2} CONFIG.C_PROBE25_MU_CNT {8} CONFIG.C_PROBE24_MU_CNT {8} CONFIG.C_PROBE23_MU_CNT {2} CONFIG.C_PROBE22_MU_CNT {2} CONFIG.C_PROBE21_MU_CNT {2} CONFIG.C_PROBE20_MU_CNT {2} CONFIG.C_PROBE19_MU_CNT {2} CONFIG.C_PROBE18_MU_CNT {2} CONFIG.C_PROBE17_MU_CNT {2} CONFIG.C_PROBE16_MU_CNT {2} CONFIG.C_PROBE15_MU_CNT {2} CONFIG.C_PROBE14_MU_CNT {2} CONFIG.C_PROBE13_MU_CNT {2} CONFIG.C_PROBE12_MU_CNT {2} CONFIG.C_PROBE11_MU_CNT {2} CONFIG.C_PROBE10_MU_CNT {2} CONFIG.C_PROBE9_MU_CNT {2} CONFIG.C_PROBE8_MU_CNT {2} CONFIG.C_PROBE7_MU_CNT {2} CONFIG.C_PROBE6_MU_CNT {2} CONFIG.C_PROBE5_MU_CNT {2} CONFIG.C_PROBE4_MU_CNT {2} CONFIG.C_PROBE3_MU_CNT {2} CONFIG.C_PROBE2_MU_CNT {2} CONFIG.C_PROBE1_MU_CNT {2} CONFIG.C_PROBE0_MU_CNT {2} CONFIG.ALL_PROBE_SAME_MU {false} CONFIG.ALL_PROBE_SAME_MU_CNT {2}] [get_ips ila_network_top_perf]
+
+
+create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_listen_port_table
+set_property -dict [list CONFIG.C_PROBE0_WIDTH {16} CONFIG.C_PROBE3_WIDTH {15}  CONFIG.C_DATA_DEPTH {1024} CONFIG.C_NUM_OF_PROBES {12} CONFIG.Component_Name {ila_listen_port_table} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1}] [get_ips ila_listen_port_table]
+
+create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_rx_app_if
+set_property -dict [list CONFIG.C_PROBE4_WIDTH {16} CONFIG.C_PROBE8_WIDTH {16} CONFIG.C_PROBE10_WIDTH {8} CONFIG.C_DATA_DEPTH {1024} CONFIG.C_NUM_OF_PROBES {13} CONFIG.Component_Name {ila_rx_app_if} CONFIG.C_EN_STRG_QUAL {1} CONFIG.C_ADV_TRIGGER {true} CONFIG.C_INPUT_PIPE_STAGES {1}] [get_ips ila_rx_app_if]
 
 
 #DDR

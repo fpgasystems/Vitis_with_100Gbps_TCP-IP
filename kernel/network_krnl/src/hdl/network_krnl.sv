@@ -71,7 +71,7 @@ module network_krnl #(
   parameter integer C_S_AXIS_TCP_LISTEN_PORT_TDATA_WIDTH      = 16 ,
   parameter integer C_M_AXIS_TCP_PORT_STATUS_TDATA_WIDTH      = 8  ,
   parameter integer C_S_AXIS_TCP_OPEN_CONNECTION_TDATA_WIDTH  = 64 ,
-  parameter integer C_M_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 32 ,
+  parameter integer C_M_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 128 ,
   parameter integer C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH = 16 ,
   parameter integer C_M_AXIS_TCP_NOTIFICATION_TDATA_WIDTH     = 128,
   parameter integer C_S_AXIS_TCP_READ_PKG_TDATA_WIDTH         = 32 ,
@@ -156,7 +156,7 @@ module network_krnl #(
   output wire                                                   m01_axi_rready                    ,
   input  wire [C_M01_AXI_DATA_WIDTH-1:0]                        m01_axi_rdata                     ,
   input  wire                                                   m01_axi_rlast                     ,
-  // AXI4-Stream (master) interface m_axis_udp_rx
+  /*// AXI4-Stream (master) interface m_axis_udp_rx
   output wire                                                   m_axis_udp_rx_tvalid              ,
   input  wire                                                   m_axis_udp_rx_tready              ,
   output wire [C_M_AXIS_UDP_RX_TDATA_WIDTH-1:0]                 m_axis_udp_rx_tdata               ,
@@ -179,7 +179,7 @@ module network_krnl #(
   output wire                                                   s_axis_udp_tx_meta_tready         ,
   input  wire [C_S_AXIS_UDP_TX_META_TDATA_WIDTH-1:0]            s_axis_udp_tx_meta_tdata          ,
   input  wire [C_S_AXIS_UDP_TX_META_TDATA_WIDTH/8-1:0]          s_axis_udp_tx_meta_tkeep          ,
-  input  wire                                                   s_axis_udp_tx_meta_tlast          ,
+  input  wire                                                   s_axis_udp_tx_meta_tlast          ,*/
   // AXI4-Stream (slave) interface s_axis_tcp_listen_port
   input  wire                                                   s_axis_tcp_listen_port_tvalid     ,
   output wire                                                   s_axis_tcp_listen_port_tready     ,
@@ -204,11 +204,11 @@ module network_krnl #(
   output wire [C_M_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH/8-1:0]      m_axis_tcp_open_status_tkeep      ,
   output wire                                                   m_axis_tcp_open_status_tlast      ,
   // AXI4-Stream (slave) interface s_axis_tcp_close_connection
-  input  wire                                                   s_axis_tcp_close_connection_tvalid,
-  output wire                                                   s_axis_tcp_close_connection_tready,
-  input  wire [C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH-1:0]   s_axis_tcp_close_connection_tdata ,
-  input  wire [C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH/8-1:0] s_axis_tcp_close_connection_tkeep ,
-  input  wire                                                   s_axis_tcp_close_connection_tlast ,
+//  input  wire                                                   s_axis_tcp_close_connection_tvalid,
+//  output wire                                                   s_axis_tcp_close_connection_tready,
+//  input  wire [C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH-1:0]   s_axis_tcp_close_connection_tdata ,
+//  input  wire [C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH/8-1:0] s_axis_tcp_close_connection_tkeep ,
+//  input  wire                                                   s_axis_tcp_close_connection_tlast ,
   // AXI4-Stream (master) interface m_axis_tcp_notification
   output wire                                                   m_axis_tcp_notification_tvalid    ,
   input  wire                                                   m_axis_tcp_notification_tready    ,
@@ -500,9 +500,9 @@ axis_data_fifo_64_d256 s_axis_tcp_open_connection_fifo (
 
 
 //open status
-axis_meta #(.WIDTH(24))     m_axis_tcp_open_status();
+axis_meta #(.WIDTH(72))     m_axis_tcp_open_status();
 
-axis_data_fifo_32_d256 m_axis_tcp_open_status_fifo (
+axis_data_fifo_72_d256 m_axis_tcp_open_status_fifo (
   //.s_axis_aresetn(~(sys_reset | user_rx_reset)),
   .s_axis_aresetn(~areset),
   .s_axis_aclk(ap_clk),
@@ -1117,34 +1117,42 @@ assign axis_net_rx_tready = axis_net_rx_data_aclk.ready;
 
 // //UDP
 // // Data rx
-assign m_axis_udp_rx_tvalid           = m_axis_udp_rx_data.valid;
-assign m_axis_udp_rx_tdata            = m_axis_udp_rx_data.data;
-assign m_axis_udp_rx_tkeep            = m_axis_udp_rx_data.keep;
-assign m_axis_udp_rx_tlast            = m_axis_udp_rx_data.last;
+//assign m_axis_udp_rx_tvalid           = m_axis_udp_rx_data.valid;
+//assign m_axis_udp_rx_tdata            = m_axis_udp_rx_data.data;
+//assign m_axis_udp_rx_tkeep            = m_axis_udp_rx_data.keep;
+//assign m_axis_udp_rx_tlast            = m_axis_udp_rx_data.last;
 
-assign m_axis_udp_rx_data.ready       = m_axis_udp_rx_tready;
+//assign m_axis_udp_rx_data.ready       = m_axis_udp_rx_tready;
+
+assign m_axis_udp_rx_data.ready       = 1'b1;
 
 // Data tx
-assign s_axis_udp_tx_data.valid       = s_axis_udp_tx_tvalid;
-assign s_axis_udp_tx_data.data        = s_axis_udp_tx_tdata;
-assign s_axis_udp_tx_data.keep        = s_axis_udp_tx_tkeep;
-assign s_axis_udp_tx_data.last        = s_axis_udp_tx_tlast;
+//assign s_axis_udp_tx_data.valid       = s_axis_udp_tx_tvalid;
+//assign s_axis_udp_tx_data.data        = s_axis_udp_tx_tdata;
+//assign s_axis_udp_tx_data.keep        = s_axis_udp_tx_tkeep;
+//assign s_axis_udp_tx_data.last        = s_axis_udp_tx_tlast;
 
-assign s_axis_udp_tx_tready           = s_axis_udp_tx_data.ready;
+//assign s_axis_udp_tx_tready           = s_axis_udp_tx_data.ready;
+
+assign s_axis_udp_tx_data.valid = 1'b0; 
 
 // Meta rx
-assign m_axis_udp_rx_meta_tvalid      = m_axis_udp_rx_metadata.valid;
-assign m_axis_udp_rx_meta_tdata       = m_axis_udp_rx_metadata.data;
-assign m_axis_udp_rx_meta_tkeep       = '1;
-assign m_axis_udp_rx_meta_tlast       = 1;
+//assign m_axis_udp_rx_meta_tvalid      = m_axis_udp_rx_metadata.valid;
+//assign m_axis_udp_rx_meta_tdata       = m_axis_udp_rx_metadata.data;
+//assign m_axis_udp_rx_meta_tkeep       = '1;
+//assign m_axis_udp_rx_meta_tlast       = 1;
 
-assign m_axis_udp_rx_metadata.ready   = m_axis_udp_rx_meta_tready;
+//assign m_axis_udp_rx_metadata.ready   = m_axis_udp_rx_meta_tready;
+
+assign m_axis_udp_rx_metadata.ready = 1'b1;
 
 // Meta tx
-assign s_axis_udp_tx_metadata.valid   = s_axis_udp_tx_meta_tvalid;
-assign s_axis_udp_tx_metadata.data    = s_axis_udp_tx_meta_tdata;
+//assign s_axis_udp_tx_metadata.valid   = s_axis_udp_tx_meta_tvalid;
+//assign s_axis_udp_tx_metadata.data    = s_axis_udp_tx_meta_tdata;
 
-assign s_axis_udp_tx_meta_tready      = s_axis_udp_tx_metadata.ready;
+//assign s_axis_udp_tx_meta_tready      = s_axis_udp_tx_metadata.ready;
+
+assign s_axis_udp_tx_metadata.valid   = 1'b0;
 
 //TCP/IP
 
@@ -1176,10 +1184,12 @@ assign m_axis_tcp_port_status.ready   = m_axis_tcp_port_status_tready;
 // assign m_axis_tcp_open_status.ready   = m_axis_tcp_open_status_tready;
 
 //close connection
-assign s_axis_tcp_close_connection.valid   = s_axis_tcp_close_connection_tvalid;
-assign s_axis_tcp_close_connection.data    = s_axis_tcp_close_connection_tdata;
+//assign s_axis_tcp_close_connection.valid   = s_axis_tcp_close_connection_tvalid;
+//assign s_axis_tcp_close_connection.data    = s_axis_tcp_close_connection_tdata;
 
-assign s_axis_tcp_close_connection_tready      = s_axis_tcp_close_connection.ready;
+//assign s_axis_tcp_close_connection_tready      = s_axis_tcp_close_connection.ready;
+
+assign s_axis_tcp_close_connection.valid =  1'b0;
 
 //notification
 assign m_axis_tcp_notification_tvalid      = m_axis_tcp_notification.valid;

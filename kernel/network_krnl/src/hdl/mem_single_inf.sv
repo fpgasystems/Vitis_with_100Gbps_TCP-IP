@@ -203,17 +203,17 @@ always @ (posedge user_clk) begin
     end
 end
 
-// ila_mem_inf inst_ila_mem_inf (
-//     .clk(mem_clk),
-//     .probe0(m_axi_wvalid), //
-//     .probe1(m_axi_wready),
-//     .probe2(m_axi_wlast), //
-//     .probe3(m_axi_awready),
-//     .probe4(m_axi_awvalid),
-//     .probe5(m_axi_bvalid),
-//     .probe6(m_axi_bready),
-//     .probe7(running)
-// );
+ ila_mem_inf inst_ila_mem_inf (
+     .clk(mem_clk),
+     .probe0(m_axi_wvalid), //
+     .probe1(m_axi_wready),
+     .probe2(m_axi_wlast), //
+     .probe3(m_axi_awready),
+     .probe4(m_axi_awvalid),
+     .probe5(m_axi_bvalid),
+     .probe6(m_axi_bready),
+     .probe7(running)
+ );
 
 
 

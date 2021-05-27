@@ -544,25 +544,25 @@ cmac_usplus_axis cmac_axis_inst (
 );
 
 
-// ila_cmac inst_ila_cmac (
-//     .clk(gt_txusrclk2),
-//     //rx
-//     .probe0(rx_prestate), //4
-//     .probe1(stat_rx_aligned_1d),
-//     .probe2(ctl_rx_enable), // input wire [0:0]  probe0
-//     .probe3(ctl_rx_force_resync), // input wire [0:0]  probe1
-//     .probe4(stat_rx_aligned), // input wire [0:0]  probe3
-//     .probe5(rx_reset_done), // input wire [0:0]  probe5
-//     .probe6(stat_rx_bad_code[0]), // input wire [0:0]  probe6
-//     .probe7(stat_rx_bad_code[1]), // input wire [0:0]  probe7
-//     .probe8({stat_rx_got_signal_os, stat_rx_hi_ber, stat_rx_inrangeerr, stat_rx_internal_local_fault, stat_rx_jabber, stat_rx_local_fault, stat_rx_misaligned}), // 7  probe14
-//     .probe9({stat_rx_received_local_fault, stat_rx_remote_fault, stat_rx_status, stat_rx_stomped_fcs}), // 6  probe15 
-//     //tx
-//     .probe10(ctl_tx_enable), // input wire [0:0]  probe0 
-//     .probe11(ctl_tx_send_idle), // input wire [0:0]  probe1
-//     .probe12(tx_prestate), // 4
-//     .probe13(tx_reset_done) // input wire [0:0]  probe9
-// );
+ila_cmac inst_ila_cmac (
+    .clk(gt_txusrclk2),
+    //rx
+    .probe0(rx_prestate), //4
+    .probe1(stat_rx_aligned_1d),
+    .probe2(ctl_rx_enable), // input wire [0:0]  probe0
+    .probe3(ctl_rx_force_resync), // input wire [0:0]  probe1
+    .probe4(stat_rx_aligned), // input wire [0:0]  probe3
+    .probe5(rx_reset_done), // input wire [0:0]  probe5
+    .probe6(stat_rx_bad_code[0]), // input wire [0:0]  probe6
+    .probe7(stat_rx_bad_code[1]), // input wire [0:0]  probe7
+    .probe8({stat_rx_got_signal_os, stat_rx_hi_ber, stat_rx_inrangeerr, stat_rx_internal_local_fault, stat_rx_jabber, stat_rx_local_fault, stat_rx_misaligned}), // 7  probe14
+    .probe9({stat_rx_received_local_fault, stat_rx_remote_fault, stat_rx_status, stat_rx_stomped_fcs}), // 6  probe15 
+    //tx
+    .probe10(ctl_tx_enable), // input wire [0:0]  probe0 
+    .probe11(ctl_tx_send_idle), // input wire [0:0]  probe1
+    .probe12(tx_prestate), // 4
+    .probe13(tx_reset_done) // input wire [0:0]  probe9
+);
 
 // ila_0 inst_ila_0 (
 //     .clk(gt_txusrclk2),

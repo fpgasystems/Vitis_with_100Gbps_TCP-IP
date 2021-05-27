@@ -186,6 +186,9 @@ always @ (posedge aclk) begin
     end
 end
 
+
+
+
 // ila_network_top inst_ila_network_top (
 //     .clk(aclk),
 //     .probe0(s_axis_read_data[0].valid), //
@@ -207,23 +210,23 @@ end
 
 
 
-// ila_network_top2 inst_ila_network_top2 (
-//     .clk(aclk),
-//     .probe0(axis_net_rx_data_aclk.valid), //
-//     .probe1(axis_net_rx_data_aclk.ready),
-//     .probe2(axis_net_tx_data_aclk.valid), //
-//     .probe3(axis_net_tx_data_aclk.ready),
-//     .probe4(m_axis_read_cmd[0].valid),
-//     .probe5(m_axis_read_cmd[0].ready),
-//     .probe6(m_axis_write_cmd[0].ready),
-//     .probe7(m_axis_write_cmd[0].valid),
-//     .probe8(s_axis_read_sts[0].valid),
-//     .probe9(s_axis_read_sts[0].ready),
-//     .probe10(s_axis_write_sts[0].valid),
-//     .probe11(s_axis_write_sts[0].ready),
-//     .probe12(axis_net_rx_data_aclk.data),//512
-//     .probe13(axis_net_tx_data_aclk.data)//512
-// );
+ ila_network_top2 inst_ila_network_top2 (
+     .clk(aclk),
+     .probe0(axis_net_rx_data_aclk.valid), //
+     .probe1(axis_net_rx_data_aclk.ready),
+     .probe2(axis_net_tx_data_aclk.valid), //
+     .probe3(axis_net_tx_data_aclk.ready),
+     .probe4(m_axis_read_cmd[0].valid),
+     .probe5(m_axis_read_cmd[0].ready),
+     .probe6(m_axis_write_cmd[0].ready),
+     .probe7(m_axis_write_cmd[0].valid),
+     .probe8(s_axis_read_sts[0].valid),
+     .probe9(s_axis_read_sts[0].ready),
+     .probe10(s_axis_write_sts[0].valid),
+     .probe11(s_axis_write_sts[0].ready)//,
+     //.probe12(axis_net_rx_data_aclk.data),//512
+     //.probe13(axis_net_tx_data_aclk.data)//512
+ );
 
 network_stack #(
     .UDP_EN(UDP_STACK_EN), 
@@ -271,5 +274,141 @@ network_stack #(
 );
 
 
+reg sent_first_tx_meta, rcvd_first_notification;
+reg [63:0] tx_cycles, rx_cycles;
+reg [63:0] txByteCnt, rxByteCnt;
+
+reg sent_first_open_con_req;
+reg [31:0] sentOpenConNum, rcvdOpenConNum;
+reg [63:0] openConCycle;
+
+always @ (posedge aclk) begin
+    if (aresetn==0) begin
+        sent_first_tx_meta <= '0;
+        rcvd_first_notification <= '0;
+        tx_cycles <= '0;
+        rx_cycles <= '0;
+        txByteCnt <= '0;
+        rxByteCnt <= '0;
+        sent_first_open_con_req <= '0;
+        sentOpenConNum <= '0;
+        rcvdOpenConNum <= '0;
+        openConCycle <= '0;
+    end
+    else begin
+        //rcvd cycle
+        if (rcvd_first_notification & rx_cycles == 750000000) begin
+            rcvd_first_notification <= 1'b0;
+        end
+        else if (m_axis_notifications.valid & m_axis_notifications.ready & ~rcvd_first_notification) begin
+            rcvd_first_notification <= 1'b1;
+        end
+
+        if (rx_cycles == 750000000) begin
+            rx_cycles <= '0;
+        end
+        else if (rcvd_first_notification) begin
+            rx_cycles <= rx_cycles + 1'b1;
+        end
+
+        //tx_cycles
+        if (sent_first_tx_meta & tx_cycles == 750000000) begin
+            sent_first_tx_meta <= 1'b0;
+        end
+        else if (s_axis_tx_metadata.valid & s_axis_tx_metadata.ready & ~sent_first_tx_meta) begin
+            sent_first_tx_meta <= 1'b1;
+        end
+
+        if (tx_cycles == 750000000) begin
+            tx_cycles <= '0;
+        end
+        else if (sent_first_tx_meta) begin
+            tx_cycles <= tx_cycles + 1'b1;
+        end
+
+
+        if (rx_cycles == 750000000 | tx_cycles == 750000000) begin
+            txByteCnt <= '0;
+            rxByteCnt <= '0;
+        end
+        else begin
+            if (s_axis_read_package.valid & s_axis_read_package.ready) begin
+                rxByteCnt <= rxByteCnt + s_axis_read_package.data[31:16];
+            end
+
+            if (m_axis_tx_status.ready & m_axis_tx_status.valid & (m_axis_tx_status.data[63:61] == 0)) begin
+                txByteCnt <= txByteCnt + m_axis_tx_status.data[31:16];
+            end
+        end
+
+        //open con cycles
+        if (sent_first_open_con_req & openConCycle == 75000000) begin
+            sent_first_open_con_req <= '0;
+        end
+        else if (s_axis_open_connection.valid & s_axis_open_connection.ready & ~sent_first_open_con_req  ) begin
+            sent_first_open_con_req <= 1'b1;
+        end
+
+        if (openConCycle == 75000000) begin
+            openConCycle <= '0;
+        end
+        else if (sent_first_open_con_req) begin
+            openConCycle <= openConCycle + 1'b1;
+        end
+
+        if (openConCycle == 75000000) begin
+            sentOpenConNum <= '0;
+            rcvdOpenConNum <= '0;
+        end
+        else begin
+            if (s_axis_open_connection.valid & s_axis_open_connection.ready) begin
+                sentOpenConNum <= sentOpenConNum + 1;
+            end
+
+            if (m_axis_open_status.ready & m_axis_open_status.valid) begin
+                rcvdOpenConNum <= rcvdOpenConNum + 1;
+            end
+        end
+
+    end
+end
+
+
+ila_network_top_perf ila_network_top_perf (
+    .clk(aclk),
+    .probe0(s_axis_open_connection.valid), //
+    .probe1(s_axis_open_connection.ready),
+    .probe2(m_axis_open_status.valid), //
+    .probe3(m_axis_open_status.ready),
+    .probe4(s_axis_tx_metadata.valid),
+    .probe5(s_axis_tx_metadata.ready),
+    .probe6(m_axis_tx_status.ready),
+    .probe7(m_axis_tx_status.valid),
+    .probe8(s_axis_tx_data.valid),
+    .probe9(s_axis_tx_data.ready),
+    .probe10(s_axis_listen_port.valid),
+    .probe11(s_axis_listen_port.ready),
+    .probe12(m_axis_listen_port_status.valid),
+    .probe13(m_axis_listen_port_status.ready),
+    .probe14(m_axis_notifications.valid),
+    .probe15(m_axis_notifications.ready),
+    .probe16(s_axis_read_package.valid),
+    .probe17(s_axis_read_package.ready),
+    .probe18(m_axis_rx_metadata.valid),
+    .probe19(m_axis_rx_metadata.ready),
+    .probe20(m_axis_rx_data.valid),
+    .probe21(m_axis_rx_data.ready),
+    .probe22(sent_first_tx_meta),
+    .probe23(aresetn),
+    .probe24(rxByteCnt), //64
+    .probe25(txByteCnt), //64
+    .probe26(tx_cycles), //64
+    .probe27(rx_cycles),//64
+
+    .probe28(sent_first_open_con_req),
+    .probe29(rcvdOpenConNum), //32
+    .probe30(sentOpenConNum), //32
+    .probe31(openConCycle) //64
+);
 
 endmodule

@@ -78,7 +78,7 @@ module scatter_role
 
     input wire                                     s_axis_tcp_open_status_tvalid ,
     output  wire                                   s_axis_tcp_open_status_tready ,
-    input wire [24-1:0]                            s_axis_tcp_open_status_tdata  ,
+    input wire [128-1:0]                            s_axis_tcp_open_status_tdata  ,
 
     output  wire                                   m_axis_tcp_close_connection_tvalid ,
     input wire                                     m_axis_tcp_close_connection_tready ,

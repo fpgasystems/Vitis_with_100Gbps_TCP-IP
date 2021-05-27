@@ -129,7 +129,7 @@ axi_stream #(.WIDTH(WIDTH) )   axis_txread_data();
 axis_meta #(.WIDTH(16))     axis_listen_port();
 axis_meta #(.WIDTH(8))      axis_listen_port_status();
 axis_meta #(.WIDTH(48))     axis_open_connection();
-axis_meta #(.WIDTH(24))     axis_open_status();
+axis_meta #(.WIDTH(72))     axis_open_status();
 axis_meta #(.WIDTH(16))     axis_close_connection();
 
 axis_meta #(.WIDTH(88))     axis_notifications();
@@ -153,10 +153,20 @@ assign s_axis_mem_read_sts[ddrPortNetworkTx].ready = 1'b1;
 //hack for now //TODO
 wire[71:0] axis_write_cmd_data [1:0];
 wire[71:0] axis_read_cmd_data [1:0];
+
+ 
+//quick fix of the read address alignment
+wire [31:0] rx_buffer_rd_addr = axis_read_cmd_data[ddrPortNetworkRx][63:32];
+wire [31:0] rx_buffer_rd_addr_shifted = rx_buffer_rd_addr << 8;
+wire [31:0] rx_buffer_wr_addr = axis_write_cmd_data[ddrPortNetworkRx][63:32];
+wire [31:0] rx_buffer_wr_addr_shifted = rx_buffer_wr_addr << 8;
+
 if (RX_DDR_BYPASS_EN == 0) begin
-    assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkRx][63:32]};
+    // assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkRx][63:32]};
+    assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, rx_buffer_wr_addr_shifted};
     assign m_axis_mem_write_cmd[ddrPortNetworkRx].length = {9'h00, axis_write_cmd_data[ddrPortNetworkRx][22:0]};
-    assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkRx][63:32]};
+    // assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkRx][63:32]};
+    assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, rx_buffer_rd_addr_shifted};
     assign m_axis_mem_read_cmd[ddrPortNetworkRx].length = {9'h00, axis_read_cmd_data[ddrPortNetworkRx][22:0]};
 end
 assign m_axis_mem_write_cmd[ddrPortNetworkTx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkTx][63:32]};
@@ -838,7 +848,7 @@ axis_register_slice_48 open_connection_slice (
   .m_axis_tdata(axis_open_connection.data)    // output wire [7 : 0] m_axis_tdata
 );
 
-axis_register_slice_24 open_status_slice (
+axis_register_slice_72 open_status_slice (
   .aclk(net_clk),                    // input wire aclk
   .aresetn(net_aresetn_rr),              // input wire aresetn
   .s_axis_tvalid(axis_open_status.valid),  // input wire s_axis_tvalid

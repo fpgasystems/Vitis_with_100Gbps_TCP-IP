@@ -47,7 +47,7 @@ void wait_for_enter(const std::string &msg) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [<#Tx Pkt> <IP address in format: 10.1.212.121> <Port>]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File> [<#Tx Pkt> <IP address in format: 10.1.212.121> <Port> <local_IP> <boardNum> <packetWord>]" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -59,6 +59,35 @@ int main(int argc, char **argv) {
 
     cl::Kernel user_kernel;
     cl::Kernel network_kernel;
+
+    uint32_t local_IP = 0x0A01D498;
+    uint32_t boardNum = 1;
+    
+    if (argc >= 6)
+    {
+        std::string s = argv[5];
+        std::string delimiter = ".";
+        int ip [4];
+        size_t pos = 0;
+        std::string token;
+        int i = 0;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            token = s.substr(0, pos);
+            ip [i] = stoi(token);
+            s.erase(0, pos + delimiter.length());
+            i++;
+        }
+        ip[i] = stoi(s); 
+        local_IP = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+    }
+
+    if (argc >= 7)
+    {
+        boardNum = strtol(argv[6], NULL, 10);
+    }
+
+    printf("local_IP:%x, boardNum:%d\n", local_IP, boardNum);
+
 
     auto size = DATA_SIZE;
     
@@ -110,9 +139,9 @@ int main(int argc, char **argv) {
 
 
     // Set network kernel arguments
-    OCL_CHECK(err, err = network_kernel.setArg(0, IP_ADDR)); // Default IP address
-    OCL_CHECK(err, err = network_kernel.setArg(1, BOARD_NUMBER)); // Board number
-    OCL_CHECK(err, err = network_kernel.setArg(2, ARP)); // ARP lookup
+    OCL_CHECK(err, err = network_kernel.setArg(0, local_IP)); // Default IP address
+    OCL_CHECK(err, err = network_kernel.setArg(1, boardNum)); // Board number
+    OCL_CHECK(err, err = network_kernel.setArg(2, local_IP)); // ARP lookup
 
     OCL_CHECK(err,
               cl::Buffer buffer_r1(context,
@@ -134,7 +163,7 @@ int main(int argc, char **argv) {
     OCL_CHECK(err, err = q.enqueueTask(network_kernel));
     OCL_CHECK(err, err = q.finish());
     
-    uint32_t numPacketWord = 22;
+    uint32_t numPacketWord = 64;
     uint32_t connection = 1;
     uint32_t baseIpAddr = 0x0A01D46E;//alveo0
     // uint32_t baseIpAddr = 0x0A01D481; //alveo4b
@@ -168,7 +197,13 @@ int main(int argc, char **argv) {
         basePort = strtol(argv[4], NULL, 10);
     }
 
-    printf("txPkt:%d, IP:%x, port:%d\n", txPkt, baseIpAddr, basePort);
+    if (argc >= 8)
+    {
+        numPacketWord = strtol(argv[7], NULL, 10);
+    }
+
+
+    printf("txPkt:%d, IP:%x, port:%d, packetWord:%d \n", txPkt, baseIpAddr, basePort, numPacketWord);
 
     double durationUs = 0.0;
 
@@ -187,7 +222,7 @@ int main(int argc, char **argv) {
     OCL_CHECK(err, err = q.finish());
     auto end = std::chrono::high_resolution_clock::now();
     durationUs = (std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count() / 1000.0);
-    printf("durationUs:%f\n",durationUs);
+    //printf("durationUs:%f\n",durationUs);
     //OPENCL HOST CODE AREA END    
 
     std::cout << "EXIT recorded" << std::endl;

@@ -2,7 +2,7 @@
 <root versionMajor="1" versionMinor="6">
   <kernel name="cmac_krnl" language="ip_c" vlnv="ethz.ch:kernel:cmac_krnl:1.0" attributes="" preferredWorkGroupSizeMultiple="0" workGroupSize="1" interrupt="false" hwControlProtocol="ap_ctrl_none">
     <ports>
-      <port name="s_axi_control" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x0"/>
+      <!-- <port name="s_axi_control" mode="slave" range="0x1000" dataWidth="32" portType="addressable" base="0x0"/> -->
       <port name="axis_net_rx" mode="write_only" dataWidth="512" portType="stream"/>
       <port name="axis_net_tx" mode="read_only" dataWidth="512" portType="stream"/>
     </ports>

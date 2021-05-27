@@ -54,6 +54,7 @@ module cmac_krnl #(
   input  wire [C_AXIS_NET_TX_TDATA_WIDTH-1:0]    axis_net_tx_tdata    ,
   input  wire [C_AXIS_NET_TX_TDATA_WIDTH/8-1:0]  axis_net_tx_tkeep    ,
   input  wire                                    axis_net_tx_tlast    ,
+/*
   // AXI4-Lite slave interface
   input  wire                                    s_axi_control_awvalid,
   output wire                                    s_axi_control_awready,
@@ -72,7 +73,7 @@ module cmac_krnl #(
   output wire                                    s_axi_control_bvalid ,
   input  wire                                    s_axi_control_bready ,
   output wire [2-1:0]                            s_axi_control_bresp  ,
-
+*/
   // Network physical
   input  wire clk_gt_freerun,
   input  wire [3:0] gt_rxp_in,
@@ -102,7 +103,7 @@ end
 // Begin control interface RTL.  Modifying not recommended.
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 // AXI4-Lite slave interface
 cmac_krnl_control_s_axi #(
   .C_S_AXI_ADDR_WIDTH ( C_S_AXI_CONTROL_ADDR_WIDTH ),
@@ -130,7 +131,7 @@ inst_control_s_axi (
   .BREADY  ( s_axi_control_bready  ),
   .BRESP   ( s_axi_control_bresp   )
 );
-
+*/
 ///////////////////////////////////////////////////////////////////////////////
 // Add kernel logic here.  Modify/remove example code as necessary.
 ///////////////////////////////////////////////////////////////////////////////
