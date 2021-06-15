@@ -327,9 +327,11 @@ always @ (posedge aclk) begin
         end
 
 
-        if (rx_cycles == 750000000 | tx_cycles == 750000000) begin
-            txByteCnt <= '0;
+        if (rx_cycles == 750000000) begin
             rxByteCnt <= '0;
+        end
+        else if (tx_cycles == 750000000) begin
+            txByteCnt <= '0;
         end
         else begin
             if (s_axis_read_package.valid & s_axis_read_package.ready) begin
