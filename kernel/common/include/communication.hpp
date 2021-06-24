@@ -301,8 +301,638 @@ void recvData(int expectedRxByteCnt,
                rxPacketLength);
 }
 
+void broadcast(hls::stream<pkt32>& m_axis_tcp_tx_meta, 
+               hls::stream<pkt512>& m_axis_tcp_tx_data, 
+               hls::stream<pkt64>& s_axis_tcp_tx_status,
+               ap_uint<512>* data_in,
+               ap_uint<16>* sessionID,
+               int useConn,
+               ap_uint<64> expectedTxByteCnt, 
+               int pkgWordCount)
+{
+     //16 KB bcast buffer
+     static ap_uint<512> broadCastBuffer[256];
+     #pragma HLS DEPENDENCE variable=broadCastBuffer inter false
+     #pragma HLS RESOURCE variable=broadCastBuffer core=RAM_T2P_BRAM
+
+     ap_uint<64> sentByteCnt = 0;
+     int currentPkgWordCnt = 0;
+     int currentSessionIndex = 0;
+     ap_uint<64> sentWordCnt = 0;
+
+     pkt32 tx_meta_pkt;
+     appTxRsp resp;
+
+     tx_meta_pkt.data(15,0) = sessionID[currentSessionIndex];
+     tx_meta_pkt.data(31,16) = pkgWordCount*(512/8);
+     m_axis_tcp_tx_meta.write(tx_meta_pkt);
+
+     do{
+          
+          if (!s_axis_tcp_tx_status.empty())
+          {
+               pkt64 txStatus_pkt = s_axis_tcp_tx_status.read();
+               resp.sessionID = txStatus_pkt.data(15,0);
+               resp.length = txStatus_pkt.data(31,16);
+               resp.remaining_space = txStatus_pkt.data(61,32);
+               resp.error = txStatus_pkt.data(63,62);
+
+               if (resp.error == 0)
+               {
+                    currentSessionIndex++;
+                    if (currentSessionIndex == useConn)
+                    {
+                         currentSessionIndex = 0;
+                         sentByteCnt = sentByteCnt + resp.length;
+                    }
+
+                    if (sentByteCnt < expectedTxByteCnt)
+                    {
+                         tx_meta_pkt.data(15,0) = sessionID[currentSessionIndex];
+                         if (sentByteCnt + pkgWordCount*64 < expectedTxByteCnt )
+                         {
+                             tx_meta_pkt.data(31,16) = pkgWordCount*(512/8);
+                             currentPkgWordCnt = pkgWordCount;
+                         }
+                         else
+                         {
+                             tx_meta_pkt.data(31,16) = expectedTxByteCnt - sentByteCnt;
+                             currentPkgWordCnt = (expectedTxByteCnt - sentByteCnt)>>6;
+                         }
+                         
+                         m_axis_tcp_tx_meta.write(tx_meta_pkt);
+                    }
+                    
+                    //if the first session, read from the stream and store it to BRAM
+                    if (currentSessionIndex == 1)
+                    {
+                         for (int j = 0; j < currentPkgWordCnt; ++j)
+                         {
+                         #pragma HLS PIPELINE II=1
+                              ap_uint<512> s_data = data_in[sentWordCnt];
+                              pkt512 currWord;
+                              for (int i = 0; i < (512/64); i++) 
+                              {
+                                   #pragma HLS UNROLL
+                                   currWord.data(i*64+63, i*64) = s_data(i*64+63, i*64);
+                                   currWord.keep(i*8+7, i*8) = 0xff;
+                              }
+                              currWord.last = (j == currentPkgWordCnt-1);
+                              m_axis_tcp_tx_data.write(currWord);
+                              broadCastBuffer[j] = s_data;
+                              sentWordCnt++;
+                         }
+                    }
+                    else // if not the first session, read from the BRAM
+                    {
+                         for (int j = 0; j < currentPkgWordCnt; ++j)
+                         {
+                         #pragma HLS PIPELINE II=1
+                              ap_uint<512> s_data = broadCastBuffer[j];
+                              pkt512 currWord;
+                              for (int i = 0; i < (512/64); i++) 
+                              {
+                                   #pragma HLS UNROLL
+                                   currWord.data(i*64+63, i*64) = s_data(i*64+63, i*64);
+                                   currWord.keep(i*8+7, i*8) = 0xff;
+                              }
+                              currWord.last = (j == currentPkgWordCnt-1);
+                              m_axis_tcp_tx_data.write(currWord);
+                         }
+                    }
+                    
+               }
+               else
+               {
+                    //Check if connection  was torn down
+                    if (resp.error == 1)
+                    {
+                         std::cout << "Connection was torn down. " << resp.sessionID << std::endl;
+                    }
+                    else
+                    {
+                         tx_meta_pkt.data(15,0) = resp.sessionID;
+                         tx_meta_pkt.data(31,16) = resp.length;
+                         m_axis_tcp_tx_meta.write(tx_meta_pkt);
+                    }
+               }
+          }
+          
+     }
+     while(sentByteCnt<expectedTxByteCnt);
+}
+
+void broadcast(hls::stream<pkt32>& m_axis_tcp_tx_meta, 
+               hls::stream<pkt512>& m_axis_tcp_tx_data, 
+               hls::stream<pkt64>& s_axis_tcp_tx_status,
+               hls::stream<ap_uint<512> >& s_data_in,
+               ap_uint<16>* sessionID,
+               int useConn,
+               ap_uint<64> expectedTxByteCnt, 
+               int pkgWordCount)
+{
+     //16 KB bcast buffer
+     static ap_uint<512> broadCastBuffer[256];
+     #pragma HLS DEPENDENCE variable=broadCastBuffer inter false
+     #pragma HLS RESOURCE variable=broadCastBuffer core=RAM_T2P_BRAM
+
+     ap_uint<64> sentByteCnt = 0;
+     int currentPkgWordCnt = 0;
+     int currentSessionIndex = 0;
+
+     pkt32 tx_meta_pkt;
+     appTxRsp resp;
+
+     tx_meta_pkt.data(15,0) = sessionID[currentSessionIndex];
+     tx_meta_pkt.data(31,16) = pkgWordCount*(512/8);
+     m_axis_tcp_tx_meta.write(tx_meta_pkt);
+
+     do{
+          
+          if (!s_axis_tcp_tx_status.empty())
+          {
+               pkt64 txStatus_pkt = s_axis_tcp_tx_status.read();
+               resp.sessionID = txStatus_pkt.data(15,0);
+               resp.length = txStatus_pkt.data(31,16);
+               resp.remaining_space = txStatus_pkt.data(61,32);
+               resp.error = txStatus_pkt.data(63,62);
+
+               if (resp.error == 0)
+               {
+                    currentSessionIndex++;
+                    if (currentSessionIndex == useConn)
+                    {
+                         currentSessionIndex = 0;
+                         sentByteCnt = sentByteCnt + resp.length;
+                    }
+
+                    if (sentByteCnt < expectedTxByteCnt)
+                    {
+                         tx_meta_pkt.data(15,0) = sessionID[currentSessionIndex];
+                         if (sentByteCnt + pkgWordCount*64 < expectedTxByteCnt )
+                         {
+                             tx_meta_pkt.data(31,16) = pkgWordCount*(512/8);
+                             currentPkgWordCnt = pkgWordCount;
+                         }
+                         else
+                         {
+                             tx_meta_pkt.data(31,16) = expectedTxByteCnt - sentByteCnt;
+                             currentPkgWordCnt = (expectedTxByteCnt - sentByteCnt)>>6;
+                         }
+                         
+                         m_axis_tcp_tx_meta.write(tx_meta_pkt);
+                    }
+                    
+                    //if the first session, read from the stream and store it to BRAM
+                    if (currentSessionIndex == 1)
+                    {
+                         for (int j = 0; j < currentPkgWordCnt; ++j)
+                         {
+                         #pragma HLS PIPELINE II=1
+                              ap_uint<512> s_data = s_data_in.read();
+                              pkt512 currWord;
+                              for (int i = 0; i < (512/64); i++) 
+                              {
+                                   #pragma HLS UNROLL
+                                   currWord.data(i*64+63, i*64) = s_data(i*64+63, i*64);
+                                   currWord.keep(i*8+7, i*8) = 0xff;
+                              }
+                              currWord.last = (j == currentPkgWordCnt-1);
+                              m_axis_tcp_tx_data.write(currWord);
+                              broadCastBuffer[j] = s_data;
+                         }
+                    }
+                    else // if not the first session, read from the BRAM
+                    {
+                         for (int j = 0; j < currentPkgWordCnt; ++j)
+                         {
+                         #pragma HLS PIPELINE II=1
+                              ap_uint<512> s_data = broadCastBuffer[j];
+                              pkt512 currWord;
+                              for (int i = 0; i < (512/64); i++) 
+                              {
+                                   #pragma HLS UNROLL
+                                   currWord.data(i*64+63, i*64) = s_data(i*64+63, i*64);
+                                   currWord.keep(i*8+7, i*8) = 0xff;
+                              }
+                              currWord.last = (j == currentPkgWordCnt-1);
+                              m_axis_tcp_tx_data.write(currWord);
+                         }
+                    }
+                    
+               }
+               else
+               {
+                    //Check if connection  was torn down
+                    if (resp.error == 1)
+                    {
+                         std::cout << "Connection was torn down. " << resp.sessionID << std::endl;
+                    }
+                    else
+                    {
+                         tx_meta_pkt.data(15,0) = resp.sessionID;
+                         tx_meta_pkt.data(31,16) = resp.length;
+                         m_axis_tcp_tx_meta.write(tx_meta_pkt);
+                    }
+               }
+          }
+          
+     }
+     while(sentByteCnt<expectedTxByteCnt);
 
 
+}
+
+
+
+
+template<int MAX_GATHER_SESSION>
+void gather_handshake(
+                    ap_uint<64> expRxBytePerSession,
+                    int useConn,
+                    int pkgWordCount,
+                    ap_uint<16> * sessionTable,
+                    int basePort,
+                    hls::stream<ap_uint<16> >& nextRxPacketLength,
+                    hls::stream<pkt128>& s_axis_tcp_notification,
+                    hls::stream<pkt32>& m_axis_tcp_read_pkg
+                              )
+{
+     ap_uint<64> totalExpRxByte = expRxBytePerSession * useConn;
+
+     //initialize available length and rx byte counter 
+     ap_uint<64> availableLength [MAX_GATHER_SESSION];
+     #pragma HLS array_partition variable=availableLength complete
+     ap_uint<64> rxByteCnt [MAX_GATHER_SESSION];
+     #pragma HLS array_partition variable=rxByteCnt complete
+
+     for (int i = 0; i < MAX_GATHER_SESSION; ++i)
+     {
+          availableLength[i] = 0;
+          rxByteCnt[i] = 0;
+     }
+
+     ap_uint<64> totalRxByte = 0;
+
+     ap_uint<16> readLength = 0;
+
+     int currentSessionIndex = 0;
+
+     do{
+          //if receive notification, accumulate the available length in corresponding session register
+          if (!s_axis_tcp_notification.empty())
+          {
+               pkt128 tcp_notification_pkt = s_axis_tcp_notification.read();
+               ap_uint<16> ID = tcp_notification_pkt.data(15,0);
+               ap_uint<16> length = tcp_notification_pkt.data(31,16);
+               ap_uint<32> ipAddress = tcp_notification_pkt.data(63,32);
+               ap_uint<16> dstPort = tcp_notification_pkt.data(79,64);
+               ap_uint<1> closed = tcp_notification_pkt.data(80,80);
+               
+               //if length not equal to 0, means packet available
+               if (length !=0)
+               {
+                    int index = (dstPort - basePort);
+                    if (index < useConn)
+                    {
+                         availableLength[index] = availableLength[index] + length;
+                         sessionTable[index] = ID;
+                    }
+               }
+
+               
+          }
+          else //check available length for each session in round-robin fashion and send out read request for each session
+          {
+               if (availableLength[currentSessionIndex] > 0 )
+               {
+                    //readout one packet per session
+                    if (availableLength[currentSessionIndex] >= (pkgWordCount * 64))
+                    {
+                         readLength = pkgWordCount * 64;
+                         pkt32 readRequest_pkt;
+                         readRequest_pkt.data(15,0) = sessionTable[currentSessionIndex];
+                         readRequest_pkt.data(31,16) = readLength;
+                         m_axis_tcp_read_pkg.write(readRequest_pkt);
+
+                         nextRxPacketLength.write(readLength);
+                         rxByteCnt[currentSessionIndex] = rxByteCnt[currentSessionIndex] + readLength;
+                         availableLength[currentSessionIndex] = availableLength[currentSessionIndex] - readLength;
+
+
+                         currentSessionIndex ++;
+                         if (currentSessionIndex == useConn)
+                         {
+                              currentSessionIndex = 0;
+                         }
+                         
+                         totalRxByte = totalRxByte + readLength;
+                    }
+                    //readout remaining word in last packet
+                    else if(rxByteCnt[currentSessionIndex] + (pkgWordCount * 64) > expRxBytePerSession)
+                    {
+                         readLength = expRxBytePerSession - rxByteCnt[currentSessionIndex];
+                         pkt32 readRequest_pkt;
+                         readRequest_pkt.data(15,0) = sessionTable[currentSessionIndex];
+                         readRequest_pkt.data(31,16) = readLength;
+                         m_axis_tcp_read_pkg.write(readRequest_pkt);
+
+                         nextRxPacketLength.write(readLength);
+                         rxByteCnt[currentSessionIndex] = rxByteCnt[currentSessionIndex] + readLength;
+                         availableLength[currentSessionIndex] = availableLength[currentSessionIndex] - readLength;
+                         
+                         currentSessionIndex ++;
+                         if (currentSessionIndex == useConn)
+                         {
+                              currentSessionIndex = 0;
+                         }
+
+                         totalRxByte = totalRxByte + readLength;
+                    }
+                    else 
+                    {
+                         //wait for getting enough data to form a packet
+                    }
+               }
+          }
+     }while(totalRxByte < totalExpRxByte);
+}
+
+void gather_consumeData(ap_uint<64> expRxBytePerSession, 
+                         int useConn,
+                         hls::stream<ap_uint<512> > & data_out,
+                         hls::stream<pkt16>& s_axis_tcp_rx_meta, 
+                         hls::stream<pkt512>& s_axis_tcp_rx_data,
+                         hls::stream<ap_uint<16> >& nextRxPacketLength
+               )
+{
+     ap_uint<64> totalExpRxByte = expRxBytePerSession * useConn;
+
+     ap_uint<64> rxByteCnt = 0;
+     ap_uint<16> length;
+
+     do{
+          if (!s_axis_tcp_rx_meta.empty() & !nextRxPacketLength.empty())
+          {
+               s_axis_tcp_rx_meta.read();
+               length = nextRxPacketLength.read();
+               bool lastWord = false;
+               do{
+                    pkt512 rx_data = s_axis_tcp_rx_data.read();
+                    data_out.write(rx_data.data);
+                    lastWord = rx_data.last;
+               }while(lastWord == false);
+               rxByteCnt = rxByteCnt + length;
+          }
+
+     }while(rxByteCnt < totalExpRxByte);
+}
+
+template<int MAX_GATHER_SESSION>
+void gather (ap_uint<64> expRxBytePerSession, 
+               int useConn,
+               ap_uint<16>* sessionTable,
+               int pkgWordCount,
+               int basePort,
+               hls::stream<ap_uint<512> > & data_out,
+               hls::stream<pkt128>& s_axis_tcp_notification, 
+               hls::stream<pkt32>& m_axis_tcp_read_pkg, 
+               hls::stream<pkt16>& s_axis_tcp_rx_meta, 
+               hls::stream<pkt512>& s_axis_tcp_rx_data )
+{
+#pragma HLS dataflow disable_start_propagation
+
+     hls::stream<ap_uint<16> >    nextRxPacketLength;
+     #pragma HLS STREAM variable=nextRxPacketLength depth=512
+
+     gather_handshake<MAX_GATHER_SESSION>(
+                       expRxBytePerSession,
+                     useConn,
+                     pkgWordCount,
+                     sessionTable,
+                     basePort,
+                     nextRxPacketLength,
+                     s_axis_tcp_notification,
+                     m_axis_tcp_read_pkg
+                              );
+
+     gather_consumeData(expRxBytePerSession, 
+                         useConn,
+                         data_out,
+                         s_axis_tcp_rx_meta, 
+                         s_axis_tcp_rx_data,
+                         nextRxPacketLength
+               );
+}
+
+//split the incoming stream in a round-robin fashion with granularity of pkgWordCount
+template<int MAX_GATHER_SESSION>
+void split_stream (ap_uint<64> totalExpRxByte, int pkgWordCount, int useConn, hls::stream<ap_uint<512> > (&s_data_out) [MAX_GATHER_SESSION], hls::stream<ap_uint<512> > & s_data_in)
+{
+     ap_uint<64> totalWordCnt = totalExpRxByte >> 6;
+
+     int streamIndex = 0;
+     int pkgWordIndex = 0;
+
+     for (int i = 0; i < totalWordCnt; ++i)
+     {
+     #pragma HLS PIPELINE II=1
+          ap_uint<512> data = s_data_in.read();
+          s_data_out[streamIndex].write(data);
+
+          pkgWordIndex ++;
+          if (pkgWordIndex == pkgWordCount)
+          {
+               streamIndex ++;
+               pkgWordIndex = 0;
+          }
+          if (streamIndex == useConn)
+          {
+               streamIndex = 0;
+          }
+     }
+}
+
+template<int MAX_GATHER_SESSION, int WIDTH>
+void sum_from_streams (ap_uint<64> expRxBytePerSession, int useConn, hls::stream<ap_uint<512> > (&s_data_in) [MAX_GATHER_SESSION], hls::stream<ap_uint<512> > & s_sum_out)
+{
+
+     ap_uint<64> expWord = expRxBytePerSession >> 6;
+     ap_uint<512> sum = 0;
+     
+     for (int i = 0; i < expWord; ++i)
+     {
+          sum = 0;
+          for (int j = 0; j < useConn; ++j)
+          {
+          #pragma HLS PIPELINE II=1
+               ap_uint<512> s_data = s_data_in[j].read();
+
+               for (int k = 0; k < 512/WIDTH; ++k)
+               {
+                    #pragma HLS UNROLL
+                    sum(k*WIDTH+WIDTH-1, k*WIDTH) = sum(k*WIDTH+WIDTH-1, k*WIDTH) + s_data(k*WIDTH+WIDTH-1, k*WIDTH);
+               }
+          }
+          s_sum_out.write(sum);
+     }
+}
+
+
+template<int MAX_GATHER_SESSION, int WIDTH>
+void reduce_sum(ap_uint<64> expRxBytePerSession, 
+          int useConn,
+          ap_uint<16>* sessionTable,
+          int pkgWordCount,
+          int basePort,
+          hls::stream<ap_uint<512> > & data_out,
+          hls::stream<pkt128>& s_axis_tcp_notification, 
+          hls::stream<pkt32>& m_axis_tcp_read_pkg, 
+          hls::stream<pkt16>& s_axis_tcp_rx_meta, 
+          hls::stream<pkt512>& s_axis_tcp_rx_data)
+{
+#pragma HLS dataflow disable_start_propagation
+
+     ap_uint<64> totalExpRxByte = useConn * expRxBytePerSession;
+
+     static hls::stream<ap_uint<512> > sessionDataBuffer[MAX_GATHER_SESSION];
+    #pragma HLS STREAM variable=sessionDataBuffer depth=512
+
+     hls::stream<ap_uint<512> >  gather_data_out;
+     #pragma HLS STREAM variable=gather_data_out depth=512
+
+     gather<MAX_GATHER_SESSION> (expRxBytePerSession, 
+           useConn,
+           sessionTable,
+           pkgWordCount,
+           basePort,
+           gather_data_out,
+           s_axis_tcp_notification, 
+           m_axis_tcp_read_pkg, 
+           s_axis_tcp_rx_meta, 
+           s_axis_tcp_rx_data );
+
+     split_stream <MAX_GATHER_SESSION> (totalExpRxByte, pkgWordCount, useConn, sessionDataBuffer, gather_data_out);
+
+     sum_from_streams <MAX_GATHER_SESSION, WIDTH> (expRxBytePerSession, useConn, sessionDataBuffer, data_out);
+}
+
+void stream2Ptr(ap_uint<512>* output, ap_uint<64> totalRxByteCnt, hls::stream<ap_uint<512> >& s_data_out )
+{
+     ap_uint<32> totalRxWordCnt = totalRxByteCnt >> 6;
+
+     for (int i = 0; i < totalRxWordCnt; ++i)
+     {
+     #pragma HLS PIPELINE II=1
+          output[i] = s_data_out.read();
+     }
+} 
+
+
+template<int MAX_GATHER_SESSION, int WIDTH>
+void reduce_sum(ap_uint<64> expRxBytePerSession, 
+          int useConn,
+          ap_uint<16>* sessionTable,
+          int pkgWordCount,
+          int basePort,
+          ap_uint<512>* data_out,
+          hls::stream<pkt128>& s_axis_tcp_notification, 
+          hls::stream<pkt32>& m_axis_tcp_read_pkg, 
+          hls::stream<pkt16>& s_axis_tcp_rx_meta, 
+          hls::stream<pkt512>& s_axis_tcp_rx_data)
+{
+#pragma HLS dataflow disable_start_propagation
+
+     ap_uint<64> totalExpRxByte = useConn * expRxBytePerSession;
+
+     static hls::stream<ap_uint<512> > sessionDataBuffer[MAX_GATHER_SESSION];
+     #pragma HLS STREAM variable=sessionDataBuffer depth=512
+
+     static hls::stream<ap_uint<512> >  gather_data_out;
+     #pragma HLS STREAM variable=gather_data_out depth=512
+
+     static hls::stream<ap_uint<512> >    s_data_out;
+     #pragma HLS STREAM variable=s_data_out depth=512
+
+     gather<MAX_GATHER_SESSION> (expRxBytePerSession, 
+           useConn,
+           sessionTable,
+           pkgWordCount,
+           basePort,
+           gather_data_out,
+           s_axis_tcp_notification, 
+           m_axis_tcp_read_pkg, 
+           s_axis_tcp_rx_meta, 
+           s_axis_tcp_rx_data );
+
+     split_stream <MAX_GATHER_SESSION> (totalExpRxByte, pkgWordCount, useConn, sessionDataBuffer, gather_data_out);
+
+     sum_from_streams <MAX_GATHER_SESSION, WIDTH> (expRxBytePerSession, useConn, sessionDataBuffer, s_data_out);
+
+     stream2Ptr(data_out, expRxBytePerSession, s_data_out);
+}
+
+
+void duplicate_stream(ap_uint<64> byte, hls::stream<ap_uint<512> > & in, hls::stream<ap_uint<512> > & out1, hls::stream<ap_uint<512> > & out2)
+{
+     ap_uint<64> word = byte >> 6;
+
+     for (int i = 0; i < word; ++i)
+     {
+     #pragma HLS PIPELINE II=1
+          ap_uint<512> data = in.read();
+          out1.write(data);
+          out2.write(data);
+     }
+}
+
+template<int MAX_GATHER_SESSION, int WIDTH>
+void allReduce_sum(
+               ap_uint<64> expRxBytePerSession, 
+               int useConn,
+               ap_uint<16>* sessionTable,
+               int pkgWordCount,
+               int basePort,
+               hls::stream<ap_uint<512> > & data_out,
+               hls::stream<pkt128>& s_axis_tcp_notification, 
+               hls::stream<pkt32>& m_axis_tcp_read_pkg, 
+               hls::stream<pkt16>& s_axis_tcp_rx_meta, 
+               hls::stream<pkt512>& s_axis_tcp_rx_data,
+               hls::stream<pkt32>& m_axis_tcp_tx_meta, 
+               hls::stream<pkt512>& m_axis_tcp_tx_data, 
+               hls::stream<pkt64>& s_axis_tcp_tx_status)
+{
+#pragma HLS dataflow disable_start_propagation
+
+hls::stream<ap_uint<512> >  s_reduce_sum;
+#pragma HLS STREAM variable=s_reduce_sum depth=512
+
+hls::stream<ap_uint<512> >  s_broadcast;
+#pragma HLS STREAM variable=s_broadcast depth=512
+
+     reduce_sum<MAX_GATHER_SESSION, WIDTH>(expRxBytePerSession, 
+          useConn,
+          sessionTable,
+          pkgWordCount,
+          basePort,
+          s_reduce_sum,
+          s_axis_tcp_notification, 
+          m_axis_tcp_read_pkg, 
+          s_axis_tcp_rx_meta, 
+          s_axis_tcp_rx_data);
+
+     duplicate_stream(expRxBytePerSession, s_reduce_sum, s_broadcast, data_out);
+
+
+     broadcast(m_axis_tcp_tx_meta, 
+               m_axis_tcp_tx_data, 
+               s_axis_tcp_tx_status,
+               s_broadcast,
+               sessionTable,
+               useConn,
+               expRxBytePerSession, 
+               pkgWordCount);
+}
 
 void tie_off_udp(hls::stream<pkt512>& s_axis_udp_rx, 
                hls::stream<pkt512>& m_axis_udp_tx, 
