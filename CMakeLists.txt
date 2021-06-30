@@ -32,7 +32,7 @@ set(TCP_STACK_EN 1 CACHE BOOL "Enable TCP/IP stack")
 set(UDP_STACK_EN 1 CACHE BOOL "Enable UDP/IP stack")
 set(TCP_STACK_RX_DDR_BYPASS_EN 1 CACHE BOOL "Enabling DDR bypass on the RX path")
 set(TCP_STACK_MSS 4096 CACHE STRING "Maximum Segment Size (MSS)")
-
+set(TCP_STACK_WINDOW_SCALING_EN 0 CACHE STRING "Window Scaling")
 
 
 # QSFP port     

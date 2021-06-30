@@ -327,9 +327,11 @@ always @ (posedge aclk) begin
         end
 
 
-        if (rx_cycles == 750000000 | tx_cycles == 750000000) begin
-            txByteCnt <= '0;
+        if (rx_cycles == 750000000) begin
             rxByteCnt <= '0;
+        end
+        else if (tx_cycles == 750000000) begin
+            txByteCnt <= '0;
         end
         else begin
             if (s_axis_read_package.valid & s_axis_read_package.ready) begin
@@ -399,7 +401,7 @@ ila_network_top_perf ila_network_top_perf (
     .probe20(m_axis_rx_data.valid),
     .probe21(m_axis_rx_data.ready),
     .probe22(sent_first_tx_meta),
-    .probe23(aresetn),
+    .probe23(rcvd_first_notification),
     .probe24(rxByteCnt), //64
     .probe25(txByteCnt), //64
     .probe26(tx_cycles), //64
