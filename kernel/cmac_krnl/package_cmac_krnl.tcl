@@ -53,6 +53,13 @@ set path_to_common "./kernel/common"
 set words [split $device "_"]
 set board [lindex $words 1]
 
+# if {[string compare -nocase $board "u280"] == 0} {
+# set projPart "xcu280-fsvh2892-2L-e"
+# } else {
+#     puts "Unknown board $board"
+#     exit 
+# }
+
 if {[string compare -nocase $board "u280"] == 0} {
 set projPart "xcu280-fsvh2892-2L-e"
 } elseif {[string compare -nocase $board "u250"] == 0} {
@@ -113,6 +120,7 @@ if {[string compare -nocase $board "u280"] == 0} {
   ]  [get_ips cmac_usplus_axis]
   update_compile_order -fileset sources_1
   }
+
 
 
 ## Crossings

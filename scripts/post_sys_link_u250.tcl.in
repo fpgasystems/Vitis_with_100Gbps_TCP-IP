@@ -46,7 +46,7 @@
 ############################################################
 #
 
-set __TCLID "(Post-linking U280 XDMA Tcl hook): "
+set __TCLID "(Post-linking U250 XDMA Tcl hook): "
 
 set __ip_list [get_property ip_repo_paths [current_project]]
 lappend __ip_list ${CMAKE_SOURCE_DIR}/build/fpga-network-stack/iprepo
@@ -85,10 +85,27 @@ if {[dict exists $config_info kernels]} {
     puts "$${}{__TCLID} kernel list 0"
   }
 
-  if {[llength $__gt_k_list] > 1} {
+  if {[llength $${}{__gt_k_list}] > 1} {
     puts "$${}{__TCLID} More than 1 GT interface is not supported. A single GT interface of max width 4 must be provided."
     exit
   }
+
+  set frc0 "clk_gt_freerun" 
+  set frc1 "ip_clkwiz_ucs_freerun_00/clk_out1"  
+  set frc2 "blp_s_aclk_freerun_ref_00"  
+  set frc3 "ii_level1_wire/ulp_m_aclk_freerun_ref_00" 
+  if {[llength [get_bd_ports $${}{frc0}]] eq 1} {  
+    set __bd_free_running_clk [get_bd_ports $${}{frc0}]  
+  } elseif {[llength [get_bd_pins $${}{frc1}]] eq 1} { 
+    set __bd_free_running_clk [get_bd_pins $${}{frc1}] 
+  } elseif {[llength [get_bd_ports $${}{frc2}]] eq 1} {  
+    set __bd_free_running_clk [get_bd_ports $${}{frc2}]  
+  } elseif {[llength [get_bd_pins $${}{frc3}]] eq 1} { 
+    set __bd_free_running_clk [get_bd_pins $${}{frc3}] 
+  } else {  
+    puts "$${}{__TCLID} WARNING no free running clock was found" 
+  } 
+  puts "$${}{__TCLID} free running clock was found $${}{__bd_free_running_clk}"
 
   if {[llength $__gt_k_list] > 0} {
     puts "$${}{__TCLID} Iterating over kernels"
@@ -98,7 +115,7 @@ if {[dict exists $config_info kernels]} {
       set __gt_intf [get_bd_intf_pins -quiet -of_objects [get_bd_cells $__k_inst] -filter {VLNV=~*gt_rtl*}]
       if {[llength $__gt_intf] > 0} {
         puts "$${}{__TCLID} connecting GT"
-        connect_bd_intf_net [get_bd_intf_ports io_gt_gtyquad_00] $__gt_intf
+        connect_bd_intf_net [get_bd_intf_ports io_gt_qsfp_00] $__gt_intf
       }
       # Raw connection to "sub-nets" of clock bd_intf_port (as kernel cannot leave a clock bd_intf_pin hanging after
       # System Linker due to validate_bd_design)
@@ -106,21 +123,21 @@ if {[dict exists $config_info kernels]} {
       set __refclk0_pins [get_bd_pins -of_objects [get_bd_cells $${}{__k_inst}] -filter {NAME =~ "gt_refclk0*"}]
       if {[llength $__refclk0_pins] > 0} {
         puts "$${}{__TCLID} connecting ref clk 0"
-        connect_bd_net [get_bd_ports io_clk_gtyquad_refclk0_01_clk_n] [get_bd_pins $${}{__k_inst}/gt_refclk0_n]
-        connect_bd_net [get_bd_ports io_clk_gtyquad_refclk0_01_clk_p] [get_bd_pins $${}{__k_inst}/gt_refclk0_p]
+        connect_bd_net [get_bd_ports io_clk_qsfp_refclka_01_clk_n] [get_bd_pins $${}{__k_inst}/gt_refclk0_n] 
+        connect_bd_net [get_bd_ports io_clk_qsfp_refclka_01_clk_p] [get_bd_pins $${}{__k_inst}/gt_refclk0_p]
       }
       set __refclk1_pins [get_bd_pins -of_objects [get_bd_cells $${}{__k_inst}] -filter {NAME =~ "gt_refclk1*"}]
       if {[llength $__refclk1_pins] > 0} {
         puts "$${}{__TCLID} connecting ref clk 1"
-        connect_bd_net [get_bd_ports io_clk_gtyquad_refclk1_01_clk_n] [get_bd_pins $${}{__k_inst}/gt_refclk1_n]
-        connect_bd_net [get_bd_ports io_clk_gtyquad_refclk1_01_clk_p] [get_bd_pins $${}{__k_inst}/gt_refclk1_p]
+        connect_bd_net [get_bd_ports io_clk_qsfp_refclkb_01_clk_n] [get_bd_pins $${}{__k_inst}/gt_refclk1_n] 
+        connect_bd_net [get_bd_ports io_clk_qsfp_refclkb_01_clk_p] [get_bd_pins $${}{__k_inst}/gt_refclk1_p]
       }
       set __freerunclk_pins [get_bd_pins -of_objects [get_bd_cells $${}{__k_inst}] -filter {NAME =~ "clk_gt_freerun"}]
       puts __freerunclk_pins
       if {[llength $__freerunclk_pins] ne 1} {
         puts "$${}{__TCLID} ERROR - No clk_gt_freerun pin found"
       } else {
-        connect_bd_net [get_bd_ports clk_gt_freerun] [get_bd_pins $${}{__k_inst}/clk_gt_freerun]
+        connect_bd_net $${}{__bd_free_running_clk} [get_bd_pins $${}{__k_inst}/clk_gt_freerun]
       }
     }
   }
