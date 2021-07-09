@@ -55,10 +55,13 @@ set board [lindex $words 1]
 
 if {[string compare -nocase $board "u280"] == 0} {
 set projPart "xcu280-fsvh2892-2L-e"
+} elseif {[string compare -nocase $board "u250"] == 0} {
+set projPart "xcu250-figd2104-2L-e"
 } else {
     puts "Unknown board $board"
     exit 
 }
+
 
 set projName kernel_pack
 create_project -force $projName $path_to_tmp_project -part $projPart
@@ -84,8 +87,33 @@ set_property -dict [list CONFIG.TDATA_NUM_BYTES {64} CONFIG.FIFO_MODE {2} CONFIG
 
 create_ip -name ethernet_frame_padding_512 -vendor ethz.systems.fpga -library hls -version 0.1 -module_name ethernet_frame_padding_512_ip 
 
-create_ip -name cmac_usplus -vendor xilinx.com -library ip  -module_name cmac_usplus_axis
-set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.GT_DRP_CLK {50} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.Component_Name {cmac_usplus_axis} ] [get_ips cmac_usplus_axis]
+# create_ip -name cmac_usplus -vendor xilinx.com -library ip  -module_name cmac_usplus_axis
+# set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.GT_DRP_CLK {50} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.Component_Name {cmac_usplus_axis} ] [get_ips cmac_usplus_axis]
+
+if {[string compare -nocase $board "u280"] == 0} {
+  create_ip -name cmac_usplus -vendor xilinx.com -library ip -module_name cmac_usplus_axis
+  set_property -dict [list CONFIG.CMAC_CAUI4_MODE {1} CONFIG.NUM_LANES {4x25} CONFIG.GT_REF_CLK_FREQ {156.25} CONFIG.USER_INTERFACE {AXIS} CONFIG.GT_DRP_CLK {50} CONFIG.TX_FLOW_CONTROL {0} CONFIG.RX_FLOW_CONTROL {0} CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} CONFIG.LANE1_GT_LOC {X0Y44} CONFIG.LANE2_GT_LOC {X0Y45} CONFIG.LANE3_GT_LOC {X0Y46} CONFIG.LANE4_GT_LOC {X0Y47} CONFIG.Component_Name {cmac_usplus_axis} ] [get_ips cmac_usplus_axis] 
+} elseif {[string compare -nocase $board "u250"] == 0} {
+  set gt_ref_clk 156.25
+  set core_selection  CMACE4_X0Y6
+  set group_selection X1Y40~X1Y43
+
+  create_ip -name cmac_usplus -vendor xilinx.com -library ip -module_name cmac_usplus_axis 
+  set_property -dict [list \
+      CONFIG.CMAC_CAUI4_MODE           {1} \
+      CONFIG.NUM_LANES                 {4x25} \
+      CONFIG.GT_REF_CLK_FREQ           $gt_ref_clk \
+      CONFIG.CMAC_CORE_SELECT          $core_selection \
+      CONFIG.GT_GROUP_SELECT           $group_selection \
+      CONFIG.USER_INTERFACE            {AXIS}\
+      CONFIG.TX_FLOW_CONTROL           {0} \
+      CONFIG.RX_FLOW_CONTROL           {0} \
+      CONFIG.GT_DRP_CLK                {50} \
+      CONFIG.Component_Name            {cmac_usplus_axis}
+  ]  [get_ips cmac_usplus_axis]
+  update_compile_order -fileset sources_1
+  }
+
 
 ## Crossings
 create_ip -name axis_data_fifo -vendor xilinx.com -library ip -version 2.0 -module_name axis_data_fifo_cc_udp_data
