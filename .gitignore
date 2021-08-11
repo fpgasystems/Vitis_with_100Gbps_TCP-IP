@@ -1,0 +1,7 @@
+*.log
+*.jou
+*.ipcache/
+_x.*
+build/
+packaged_kernel*/
+tmp_kernel_pack*/
