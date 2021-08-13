@@ -144,7 +144,7 @@ end
 always @(posedge ACLK) begin
     if (ACLK_EN) begin
         if (ar_hs) begin
-            rdata <= 1'b0;
+            rdata <= 32'h0;
         end
     end
 end
