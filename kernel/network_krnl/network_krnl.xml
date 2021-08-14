@@ -12,7 +12,7 @@
       <port name="s_axis_tcp_listen_port" mode="read_only" dataWidth="16" portType="stream"/>
       <port name="m_axis_tcp_port_status" mode="write_only" dataWidth="8" portType="stream"/>
       <port name="s_axis_tcp_open_connection" mode="read_only" dataWidth="64" portType="stream"/>
-      <port name="m_axis_tcp_open_status" mode="write_only" dataWidth="32" portType="stream"/>
+      <port name="m_axis_tcp_open_status" mode="write_only" dataWidth="128" portType="stream"/>
       <!-- <port name="s_axis_tcp_close_connection" mode="read_only" dataWidth="16" portType="stream"/> -->
       <port name="m_axis_tcp_notification" mode="write_only" dataWidth="128" portType="stream"/>
       <port name="s_axis_tcp_read_pkg" mode="read_only" dataWidth="32" portType="stream"/>
