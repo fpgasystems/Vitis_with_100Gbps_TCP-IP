@@ -433,7 +433,7 @@ axis_data_reg inst_reg_toe_in (.aclk(net_clk), .aresetn(net_aresetn_r), .s_axis(
 // assign axis_iph_to_toe_slice.ready = 1'b0;
 
 // ROCE
-assign axis_iph_to_roce_slice.ready = 1'b0;
+assign axis_iph_to_roce_slice.ready = 1'b1;
 
 // TX
 
