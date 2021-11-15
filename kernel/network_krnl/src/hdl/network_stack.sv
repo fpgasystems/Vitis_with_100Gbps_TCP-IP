@@ -287,6 +287,30 @@ assign ip_address_used = iph_ip_address;
  * IP handler
  */
 
+ila_ip_handler inst_ila_ip_handler(
+  .clk(net_clk),
+  .probe0(axis_iph_to_arp_slice.valid), //1
+  .probe1(axis_iph_to_arp_slice.ready), //1
+  .probe2(axis_iph_to_icmp_slice.valid), //1
+  .probe3(axis_iph_to_icmp_slice.ready), //1
+  .probe4(axis_iph_to_icmpv6_slice.valid), //1
+  .probe5(axis_iph_to_icmpv6_slice.ready), //1
+  .probe6(axis_iph_to_rocev6_slice.valid), //1
+  .probe7(axis_iph_to_rocev6_slice.ready), //1
+  .probe8(axis_iph_to_udp_slice.valid), //1
+  .probe9(axis_iph_to_udp_slice.ready), //1
+  .probe10(axis_iph_to_toe_slice.valid), //1
+  .probe11(axis_iph_to_toe_slice.ready), //1
+  .probe12(axis_iph_to_roce_slice.valid), //1
+  .probe13(axis_iph_to_roce_slice.ready), //1
+  .probe14(axis_slice_to_ibh.valid), //1
+  .probe15(axis_slice_to_ibh.ready), //1
+  .probe16(axis_slice_to_ibh.data), //512
+  .probe17(iph_ip_address) //32
+
+);
+
+
 axis_data_reg inst_reg_net_in (.aclk(net_clk), .aresetn(net_aresetn_r), .s_axis(s_axis_net), .m_axis(axis_slice_to_ibh));
  
 ip_handler_ip ip_handler_inst (
@@ -433,7 +457,7 @@ axis_data_reg inst_reg_toe_in (.aclk(net_clk), .aresetn(net_aresetn_r), .s_axis(
 // assign axis_iph_to_toe_slice.ready = 1'b0;
 
 // ROCE
-assign axis_iph_to_roce_slice.ready = 1'b0;
+assign axis_iph_to_roce_slice.ready = 1'b1;
 
 // TX
 
