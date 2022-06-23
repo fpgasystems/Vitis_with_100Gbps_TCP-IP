@@ -92,7 +92,7 @@ network_module inst_network_module
 (
     .dclk (clk_gt_freerun),
     .net_clk(net_clk),
-    .sys_reset (1'b0),
+    .sys_reset (areset),
     .aresetn(net_aresetn_reg),
     .network_init_done(network_init),
     
