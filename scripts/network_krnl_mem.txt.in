@@ -1,0 +1,3 @@
+[connectivity] 
+sp=network_krnl_1.m00_axi:${NETWORK_KRNL_MEM}
+sp=network_krnl_1.m01_axi:${NETWORK_KRNL_MEM}

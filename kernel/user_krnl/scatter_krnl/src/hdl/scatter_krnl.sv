@@ -65,7 +65,7 @@ module scatter_krnl #(
   parameter integer C_M_AXIS_TCP_LISTEN_PORT_TDATA_WIDTH      = 16 ,
   parameter integer C_S_AXIS_TCP_PORT_STATUS_TDATA_WIDTH      = 8  ,
   parameter integer C_M_AXIS_TCP_OPEN_CONNECTION_TDATA_WIDTH  = 64 ,
-  parameter integer C_S_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 32 ,
+  parameter integer C_S_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 128,
   parameter integer C_M_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH = 16 ,
   parameter integer C_S_AXIS_TCP_NOTIFICATION_TDATA_WIDTH     = 128,
   parameter integer C_M_AXIS_TCP_READ_PKG_TDATA_WIDTH         = 32 ,

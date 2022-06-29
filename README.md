@@ -123,17 +123,38 @@ Kernel options:
 
 | Vitis  | XRT       |
 |--------|-----------|
-| 2019.2 | 2.6.655   |
+| 2022.1 | 2.13.466  |
 
 ### Alveo Cards
 
 | Alveo | Development Target Platform(s) | 
 |-------|----------|
 | U280  | xilinx_u280_xdma_201920_3 | 
-
+| U250  | xilinx_u250_gen3x16_xdma_3_1_202020_1 | 
+| U50  | xilinx_u50_gen3x16_xdma_5_202210_1 |
+| U55C  | xilinx_u55c_gen3x16_xdma_3_202210_1 |  
 ### Requirements
 
 In order to generate this design you will need a valid [UltraScale+ Integrated 100G Ethernet Subsystem](https://www.xilinx.com/products/intellectual-property/cmac_usplus.html) license set up in Vivado.
 
 ## Acknowledgement
 We would like to thank David Sidler for developing the prototype of 100 Gbps TCP/IP stack and Mario Daniel Ruiz Noguera for helpful discussion. We also thank Xilinx for generous donations of software and hardware to build the Xilinx Adaptive Compute Cluster (XACC) at ETH Zurich.
+
+## Publication
+
+###### If you use EasyNet, cite us :
+
+```bibtex
+@INPROCEEDINGS {easynet,
+    author = {Z. He and D. Korolija and G. Alonso},
+    booktitle = {2021 31st International Conference on Field-Programmable Logic and Applications (FPL)},
+    title = {EasyNet: 100 Gbps Network for HLS},
+    year = {2021},
+    pages = {197-203},
+    doi = {10.1109/FPL53798.2021.00040},
+    url = {https://doi.ieeecomputersociety.org/10.1109/FPL53798.2021.00040},
+    publisher = {IEEE Computer Society},
+    address = {Los Alamitos, CA, USA},
+    month = {sep}
+}
+```

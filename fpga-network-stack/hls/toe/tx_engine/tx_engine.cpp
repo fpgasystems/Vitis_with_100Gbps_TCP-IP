@@ -1627,7 +1627,7 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 				stream<net_axis<WIDTH> >&				ipTxData,
 				stream<ap_uint<1> >&			readCountFifo)
 {
-#pragma HLS DATAFLOW
+// #pragma HLS DATAFLOW
 #pragma HLS INTERFACE ap_ctrl_none port=return
 //#pragma HLS PIPELINE II=1
 #pragma HLS INLINE //off
@@ -1639,9 +1639,9 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 	//#pragma HLS stream variable=txEng_metaDataFifo depth=16
 	#pragma HLS stream variable=txEng_ipMetaFifo depth=32
 	#pragma HLS stream variable=txEng_tcpMetaFifo depth=32
-	//#pragma HLS DATA_PACK variable=txEng_metaDataFifo
-	//#pragma HLS DATA_PACK variable=txEng_ipMetaFifo
-	#pragma HLS DATA_PACK variable=txEng_tcpMetaFifo
+	//#pragma HLS aggregate  variable=txEng_metaDataFifo compact=bit
+	//#pragma HLS aggregate  variable=txEng_ipMetaFifo compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpMetaFifo compact=bit
 
 	static hls::stream<net_axis<WIDTH> >		txBufferReadDataStitched("txBufferReadDAtaStitched");
 	static hls::stream<net_axis<WIDTH> >		txEng_shift2pseudoFifo("txEng_shift2pseudoFifo");
@@ -1663,21 +1663,21 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 	#pragma HLS stream variable=txEng_tcpPkgBuffer5 depth=2
 	#pragma HLS stream variable=txEng_tcpPkgBuffer6 depth=2
 
-	#pragma HLS DATA_PACK variable=txBufferReadDataStitched
-	#pragma HLS DATA_PACK variable=txEng_shift2pseudoFifo
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer0
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer1
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer2
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer3
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer4
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer5
-	#pragma HLS DATA_PACK variable=txEng_tcpPkgBuffer6
+	#pragma HLS aggregate  variable=txBufferReadDataStitched compact=bit
+	#pragma HLS aggregate  variable=txEng_shift2pseudoFifo compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer0 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer1 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer2 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer3 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer4 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer5 compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpPkgBuffer6 compact=bit
 
 	static stream<subSums<WIDTH/16> >			txEng_subChecksumsFifo("txEng_subChecksumsFifo");
 	static stream<ap_uint<16> >			txEng_tcpChecksumFifo("txEng_tcpChecksumFifo");
 	#pragma HLS stream variable=txEng_subChecksumsFifo depth=2
 	#pragma HLS stream variable=txEng_tcpChecksumFifo depth=4
-	#pragma HLS DATA_PACK variable=txEng_subChecksumsFifo
+	#pragma HLS aggregate  variable=txEng_subChecksumsFifo compact=bit
 
 	static stream<fourTuple> 		txEng_tupleShortCutFifo("txEng_tupleShortCutFifo");
 	static stream<bool>				txEng_isLookUpFifo("txEng_isLookUpFifo");
@@ -1687,13 +1687,13 @@ void tx_engine(	stream<extendedEvent>&			eventEng2txEng_event,
 	#pragma HLS stream variable=txEng_isLookUpFifo depth=4
 	#pragma HLS stream variable=txEng_ipTupleFifo depth=32
 	#pragma HLS stream variable=txEng_tcpTupleFifo depth=32
-	#pragma HLS DATA_PACK variable=txEng_tupleShortCutFifo
-	#pragma HLS DATA_PACK variable=txEng_ipTupleFifo
-	#pragma HLS DATA_PACK variable=txEng_tcpTupleFifo
+	#pragma HLS aggregate  variable=txEng_tupleShortCutFifo compact=bit
+	#pragma HLS aggregate  variable=txEng_ipTupleFifo compact=bit
+	#pragma HLS aggregate  variable=txEng_tcpTupleFifo compact=bit
 
 	static stream<mmCmd> txMetaloader2memAccessBreakdown("txMetaloader2memAccessBreakdown");
 	#pragma HLS stream variable=txMetaloader2memAccessBreakdown depth=32
-	#pragma HLS DATA_PACK variable=txMetaloader2memAccessBreakdown
+	#pragma HLS aggregate  variable=txMetaloader2memAccessBreakdown compact=bit
 	static stream<bool> memAccessBreakdown2txPkgStitcher("memAccessBreakdown2txPkgStitcher");
 	#pragma HLS stream variable=memAccessBreakdown2txPkgStitcher depth=32
 	

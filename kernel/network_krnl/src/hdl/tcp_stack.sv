@@ -115,10 +115,10 @@ wire        lup_rsp_TVALID;
 wire        lup_rsp_TREADY;
 wire[15:0]  lup_rsp_TDATA;*/
 // Hash Table signals
-axis_meta #(.WIDTH(72))     axis_ht_lup_req();
-axis_meta #(.WIDTH(88))     axis_ht_lup_rsp();
-axis_meta #(.WIDTH(88))     axis_ht_upd_req();
-axis_meta #(.WIDTH(88))     axis_ht_upd_rsp();
+axis_meta #(.WIDTH(96))     axis_ht_lup_req();
+axis_meta #(.WIDTH(120))     axis_ht_lup_rsp();
+axis_meta #(.WIDTH(144))     axis_ht_upd_req();
+axis_meta #(.WIDTH(152))     axis_ht_upd_rsp();
 
 // Signals for registering
 axi_stream #(.WIDTH(WIDTH) )   axis_rxwrite_data();
@@ -129,7 +129,7 @@ axi_stream #(.WIDTH(WIDTH) )   axis_txread_data();
 axis_meta #(.WIDTH(16))     axis_listen_port();
 axis_meta #(.WIDTH(8))      axis_listen_port_status();
 axis_meta #(.WIDTH(48))     axis_open_connection();
-axis_meta #(.WIDTH(24))     axis_open_status();
+axis_meta #(.WIDTH(72))     axis_open_status();
 axis_meta #(.WIDTH(16))     axis_close_connection();
 
 axis_meta #(.WIDTH(88))     axis_notifications();
@@ -153,10 +153,20 @@ assign s_axis_mem_read_sts[ddrPortNetworkTx].ready = 1'b1;
 //hack for now //TODO
 wire[71:0] axis_write_cmd_data [1:0];
 wire[71:0] axis_read_cmd_data [1:0];
+
+ 
+//quick fix of the read address alignment
+wire [31:0] rx_buffer_rd_addr = axis_read_cmd_data[ddrPortNetworkRx][63:32];
+wire [31:0] rx_buffer_rd_addr_shifted = rx_buffer_rd_addr << 8;
+wire [31:0] rx_buffer_wr_addr = axis_write_cmd_data[ddrPortNetworkRx][63:32];
+wire [31:0] rx_buffer_wr_addr_shifted = rx_buffer_wr_addr << 8;
+
 if (RX_DDR_BYPASS_EN == 0) begin
-    assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkRx][63:32]};
+    // assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkRx][63:32]};
+    assign m_axis_mem_write_cmd[ddrPortNetworkRx].address = {32'h0000_0000, rx_buffer_wr_addr_shifted};
     assign m_axis_mem_write_cmd[ddrPortNetworkRx].length = {9'h00, axis_write_cmd_data[ddrPortNetworkRx][22:0]};
-    assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkRx][63:32]};
+    // assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, axis_read_cmd_data[ddrPortNetworkRx][63:32]};
+    assign m_axis_mem_read_cmd[ddrPortNetworkRx].address = {32'h0000_0000, rx_buffer_rd_addr_shifted};
     assign m_axis_mem_read_cmd[ddrPortNetworkRx].length = {9'h00, axis_read_cmd_data[ddrPortNetworkRx][22:0]};
 end
 assign m_axis_mem_write_cmd[ddrPortNetworkTx].address = {32'h0000_0000, axis_write_cmd_data[ddrPortNetworkTx][63:32]};
@@ -183,17 +193,17 @@ toe_ip toe_inst (
 .s_axis_tcp_data_TLAST(s_axis_rx_data.last),
 
 // rx read commands
-.m_axis_rxread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkRx].valid),
-.m_axis_rxread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkRx].ready),
-.m_axis_rxread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkRx]),
+.m_axis_rxread_cmd_TVALID(m_axis_mem_read_cmd[ddrPortNetworkRx].valid),
+.m_axis_rxread_cmd_TREADY(m_axis_mem_read_cmd[ddrPortNetworkRx].ready),
+.m_axis_rxread_cmd_TDATA(axis_read_cmd_data[ddrPortNetworkRx]),
 // rx write commands
-.m_axis_rxwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkRx].valid),
-.m_axis_rxwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkRx].ready),
-.m_axis_rxwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkRx]),
+.m_axis_rxwrite_cmd_TVALID(m_axis_mem_write_cmd[ddrPortNetworkRx].valid),
+.m_axis_rxwrite_cmd_TREADY(m_axis_mem_write_cmd[ddrPortNetworkRx].ready),
+.m_axis_rxwrite_cmd_TDATA(axis_write_cmd_data[ddrPortNetworkRx]),
 // rx write status
-.s_axis_rxwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkRx].valid),
-.s_axis_rxwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkRx].ready),
-.s_axis_rxwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkRx].data),
+.s_axis_rxwrite_sts_TVALID(s_axis_mem_write_sts[ddrPortNetworkRx].valid),
+.s_axis_rxwrite_sts_TREADY(s_axis_mem_write_sts[ddrPortNetworkRx].ready),
+.s_axis_rxwrite_sts_TDATA(s_axis_mem_write_sts[ddrPortNetworkRx].data),
 // rx buffer read path
 .s_axis_rxread_data_TVALID(axis_rxread_data.valid),
 .s_axis_rxread_data_TREADY(axis_rxread_data.ready),
@@ -208,17 +218,17 @@ toe_ip toe_inst (
 .m_axis_rxwrite_data_TLAST(axis_rxwrite_data.last),
 
 // tx read commands
-.m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
-.m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
-.m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
+.m_axis_txread_cmd_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
+.m_axis_txread_cmd_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
+.m_axis_txread_cmd_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
 //tx write commands
-.m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
-.m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
-.m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
+.m_axis_txwrite_cmd_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
+.m_axis_txwrite_cmd_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
+.m_axis_txwrite_cmd_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
 // tx write status
-.s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
-.s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
-.s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
+.s_axis_txwrite_sts_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
+.s_axis_txwrite_sts_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
+.s_axis_txwrite_sts_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
 // tx read path
 .s_axis_txread_data_TVALID(axis_txread_data.valid),
 .s_axis_txread_data_TREADY(axis_txread_data.ready),
@@ -232,53 +242,53 @@ toe_ip toe_inst (
 .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
 .m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
 /// SmartCAM I/F ///
-.m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
-.m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
-.m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
+.m_axis_session_upd_req_TVALID(axis_ht_upd_req.valid),
+.m_axis_session_upd_req_TREADY(axis_ht_upd_req.ready),
+.m_axis_session_upd_req_TDATA(axis_ht_upd_req.data),
 
-.s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
-.s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
-.s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
+.s_axis_session_upd_rsp_TVALID(axis_ht_upd_rsp.valid),
+.s_axis_session_upd_rsp_TREADY(axis_ht_upd_rsp.ready),
+.s_axis_session_upd_rsp_TDATA(axis_ht_upd_rsp.data),
 
-.m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid),
-.m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready),
-.m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data),
-.s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
-.s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
-.s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
+.m_axis_session_lup_req_TVALID(axis_ht_lup_req.valid),
+.m_axis_session_lup_req_TREADY(axis_ht_lup_req.ready),
+.m_axis_session_lup_req_TDATA(axis_ht_lup_req.data),
+.s_axis_session_lup_rsp_TVALID(axis_ht_lup_rsp.valid),
+.s_axis_session_lup_rsp_TREADY(axis_ht_lup_rsp.ready),
+.s_axis_session_lup_rsp_TDATA(axis_ht_lup_rsp.data),
 
 /* Application Interface */
 // listen&close port
-.s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid),
-.s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready),
-.s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data),
-.m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid),
-.m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready),
-.m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data),
+.s_axis_listen_port_req_TVALID(axis_listen_port.valid),
+.s_axis_listen_port_req_TREADY(axis_listen_port.ready),
+.s_axis_listen_port_req_TDATA(axis_listen_port.data),
+.m_axis_listen_port_rsp_TVALID(axis_listen_port_status.valid),
+.m_axis_listen_port_rsp_TREADY(axis_listen_port_status.ready),
+.m_axis_listen_port_rsp_TDATA(axis_listen_port_status.data),
 
 // notification & read request
-.m_axis_notification_V_TVALID(axis_notifications.valid),
-.m_axis_notification_V_TREADY(axis_notifications.ready),
-.m_axis_notification_V_TDATA(axis_notifications.data),
-.s_axis_rx_data_req_V_TVALID(axis_read_package.valid),
-.s_axis_rx_data_req_V_TREADY(axis_read_package.ready),
-.s_axis_rx_data_req_V_TDATA(axis_read_package.data),
+.m_axis_notification_TVALID(axis_notifications.valid),
+.m_axis_notification_TREADY(axis_notifications.ready),
+.m_axis_notification_TDATA(axis_notifications.data),
+.s_axis_rx_data_req_TVALID(axis_read_package.valid),
+.s_axis_rx_data_req_TREADY(axis_read_package.ready),
+.s_axis_rx_data_req_TDATA(axis_read_package.data),
 
 // open&close connection
-.s_axis_open_conn_req_V_TVALID(axis_open_connection.valid),
-.s_axis_open_conn_req_V_TREADY(axis_open_connection.ready),
-.s_axis_open_conn_req_V_TDATA(axis_open_connection.data),
-.m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid),
-.m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready),
-.m_axis_open_conn_rsp_V_TDATA(axis_open_status.data),
-.s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid),
-.s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready),
-.s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data),
+.s_axis_open_conn_req_TVALID(axis_open_connection.valid),
+.s_axis_open_conn_req_TREADY(axis_open_connection.ready),
+.s_axis_open_conn_req_TDATA(axis_open_connection.data),
+.m_axis_open_conn_rsp_TVALID(axis_open_status.valid),
+.m_axis_open_conn_rsp_TREADY(axis_open_status.ready),
+.m_axis_open_conn_rsp_TDATA(axis_open_status.data),
+.s_axis_close_conn_req_TVALID(axis_close_connection.valid),
+.s_axis_close_conn_req_TREADY(axis_close_connection.ready),
+.s_axis_close_conn_req_TDATA(axis_close_connection.data),
 
 // rx data
-.m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid),
-.m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready),
-.m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data),
+.m_axis_rx_data_rsp_metadata_TVALID(axis_rx_metadata.valid),
+.m_axis_rx_data_rsp_metadata_TREADY(axis_rx_metadata.ready),
+.m_axis_rx_data_rsp_metadata_TDATA(axis_rx_metadata.data),
 .m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid),
 .m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready),
 .m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data),
@@ -286,21 +296,21 @@ toe_ip toe_inst (
 .m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last),
 
 // tx data
-.s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid),
-.s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready),
-.s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data),
+.s_axis_tx_data_req_metadata_TVALID(axis_tx_metadata.valid),
+.s_axis_tx_data_req_metadata_TREADY(axis_tx_metadata.ready),
+.s_axis_tx_data_req_metadata_TDATA(axis_tx_metadata.data),
 .s_axis_tx_data_req_TVALID(s_axis_tx_data.valid),
 .s_axis_tx_data_req_TREADY(s_axis_tx_data.ready),
 .s_axis_tx_data_req_TDATA(s_axis_tx_data.data),
 .s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep),
 .s_axis_tx_data_req_TLAST(s_axis_tx_data.last),
-.m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid),
-.m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready),
-.m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data),
+.m_axis_tx_data_rsp_TVALID(m_axis_tx_status.valid),
+.m_axis_tx_data_rsp_TREADY(m_axis_tx_status.ready),
+.m_axis_tx_data_rsp_TDATA(m_axis_tx_status.data),
 
-.myIpAddress_V(local_ip_address),
-.regSessionCount_V(session_count_data),
-.regSessionCount_V_ap_vld(session_count_valid),
+.myIpAddress(local_ip_address),
+.regSessionCount(session_count_data),
+.regSessionCount_ap_vld(session_count_valid),
 .ap_clk(net_clk),                                                        // input aclk
 .ap_rst_n(net_aresetn_r)                                                   // input aresetn
 );
@@ -336,17 +346,17 @@ toe_ip toe_inst (
 .m_axis_rxwrite_data_TLAST(axis_tcp2rxbuffer.last),
 
 // tx read commands
-.m_axis_txread_cmd_V_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
-.m_axis_txread_cmd_V_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
-.m_axis_txread_cmd_V_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
+.m_axis_txread_cmd_TVALID(m_axis_mem_read_cmd[ddrPortNetworkTx].valid),
+.m_axis_txread_cmd_TREADY(m_axis_mem_read_cmd[ddrPortNetworkTx].ready),
+.m_axis_txread_cmd_TDATA(axis_read_cmd_data[ddrPortNetworkTx]),
 //tx write commands
-.m_axis_txwrite_cmd_V_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
-.m_axis_txwrite_cmd_V_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
-.m_axis_txwrite_cmd_V_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
+.m_axis_txwrite_cmd_TVALID(m_axis_mem_write_cmd[ddrPortNetworkTx].valid),
+.m_axis_txwrite_cmd_TREADY(m_axis_mem_write_cmd[ddrPortNetworkTx].ready),
+.m_axis_txwrite_cmd_TDATA(axis_write_cmd_data[ddrPortNetworkTx]),
 // tx write status
-.s_axis_txwrite_sts_V_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
-.s_axis_txwrite_sts_V_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
-.s_axis_txwrite_sts_V_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
+.s_axis_txwrite_sts_TVALID(s_axis_mem_write_sts[ddrPortNetworkTx].valid),
+.s_axis_txwrite_sts_TREADY(s_axis_mem_write_sts[ddrPortNetworkTx].ready),
+.s_axis_txwrite_sts_TDATA(s_axis_mem_write_sts[ddrPortNetworkTx].data),
 // tx read path
 .s_axis_txread_data_TVALID(axis_txread_data.valid),
 .s_axis_txread_data_TREADY(axis_txread_data.ready),
@@ -360,53 +370,53 @@ toe_ip toe_inst (
 .m_axis_txwrite_data_TKEEP(axis_txwrite_data.keep),
 .m_axis_txwrite_data_TLAST(axis_txwrite_data.last),
 /// SmartCAM I/F ///
-.m_axis_session_upd_req_V_TVALID(axis_ht_upd_req.valid),
-.m_axis_session_upd_req_V_TREADY(axis_ht_upd_req.ready),
-.m_axis_session_upd_req_V_TDATA(axis_ht_upd_req.data),
+.m_axis_session_upd_req_TVALID(axis_ht_upd_req.valid),
+.m_axis_session_upd_req_TREADY(axis_ht_upd_req.ready),
+.m_axis_session_upd_req_TDATA(axis_ht_upd_req.data),
 
-.s_axis_session_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
-.s_axis_session_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
-.s_axis_session_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
+.s_axis_session_upd_rsp_TVALID(axis_ht_upd_rsp.valid),
+.s_axis_session_upd_rsp_TREADY(axis_ht_upd_rsp.ready),
+.s_axis_session_upd_rsp_TDATA(axis_ht_upd_rsp.data),
 
-.m_axis_session_lup_req_V_TVALID(axis_ht_lup_req.valid),
-.m_axis_session_lup_req_V_TREADY(axis_ht_lup_req.ready),
-.m_axis_session_lup_req_V_TDATA(axis_ht_lup_req.data),
-.s_axis_session_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
-.s_axis_session_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
-.s_axis_session_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
+.m_axis_session_lup_req_TVALID(axis_ht_lup_req.valid),
+.m_axis_session_lup_req_TREADY(axis_ht_lup_req.ready),
+.m_axis_session_lup_req_TDATA(axis_ht_lup_req.data),
+.s_axis_session_lup_rsp_TVALID(axis_ht_lup_rsp.valid),
+.s_axis_session_lup_rsp_TREADY(axis_ht_lup_rsp.ready),
+.s_axis_session_lup_rsp_TDATA(axis_ht_lup_rsp.data),
 
 /* Application Interface */
 // listen&close port
-.s_axis_listen_port_req_V_V_TVALID(axis_listen_port.valid),
-.s_axis_listen_port_req_V_V_TREADY(axis_listen_port.ready),
-.s_axis_listen_port_req_V_V_TDATA(axis_listen_port.data),
-.m_axis_listen_port_rsp_V_TVALID(axis_listen_port_status.valid),
-.m_axis_listen_port_rsp_V_TREADY(axis_listen_port_status.ready),
-.m_axis_listen_port_rsp_V_TDATA(axis_listen_port_status.data),
+.s_axis_listen_port_req_TVALID(axis_listen_port.valid),
+.s_axis_listen_port_req_TREADY(axis_listen_port.ready),
+.s_axis_listen_port_req_TDATA(axis_listen_port.data),
+.m_axis_listen_port_rsp_TVALID(axis_listen_port_status.valid),
+.m_axis_listen_port_rsp_TREADY(axis_listen_port_status.ready),
+.m_axis_listen_port_rsp_TDATA(axis_listen_port_status.data),
 
 // notification & read request
-.m_axis_notification_V_TVALID(axis_notifications.valid),
-.m_axis_notification_V_TREADY(axis_notifications.ready),
-.m_axis_notification_V_TDATA(axis_notifications.data),
-.s_axis_rx_data_req_V_TVALID(axis_read_package.valid),
-.s_axis_rx_data_req_V_TREADY(axis_read_package.ready),
-.s_axis_rx_data_req_V_TDATA(axis_read_package.data),
+.m_axis_notification_TVALID(axis_notifications.valid),
+.m_axis_notification_TREADY(axis_notifications.ready),
+.m_axis_notification_TDATA(axis_notifications.data),
+.s_axis_rx_data_req_TVALID(axis_read_package.valid),
+.s_axis_rx_data_req_TREADY(axis_read_package.ready),
+.s_axis_rx_data_req_TDATA(axis_read_package.data),
 
 // open&close connection
-.s_axis_open_conn_req_V_TVALID(axis_open_connection.valid),
-.s_axis_open_conn_req_V_TREADY(axis_open_connection.ready),
-.s_axis_open_conn_req_V_TDATA(axis_open_connection.data),
-.m_axis_open_conn_rsp_V_TVALID(axis_open_status.valid),
-.m_axis_open_conn_rsp_V_TREADY(axis_open_status.ready),
-.m_axis_open_conn_rsp_V_TDATA(axis_open_status.data),
-.s_axis_close_conn_req_V_V_TVALID(axis_close_connection.valid),
-.s_axis_close_conn_req_V_V_TREADY(axis_close_connection.ready),
-.s_axis_close_conn_req_V_V_TDATA(axis_close_connection.data),
+.s_axis_open_conn_req_TVALID(axis_open_connection.valid),
+.s_axis_open_conn_req_TREADY(axis_open_connection.ready),
+.s_axis_open_conn_req_TDATA(axis_open_connection.data),
+.m_axis_open_conn_rsp_TVALID(axis_open_status.valid),
+.m_axis_open_conn_rsp_TREADY(axis_open_status.ready),
+.m_axis_open_conn_rsp_TDATA(axis_open_status.data),
+.s_axis_close_conn_req_TVALID(axis_close_connection.valid),
+.s_axis_close_conn_req_TREADY(axis_close_connection.ready),
+.s_axis_close_conn_req_TDATA(axis_close_connection.data),
 
 // rx data
-.m_axis_rx_data_rsp_metadata_V_V_TVALID(axis_rx_metadata.valid),
-.m_axis_rx_data_rsp_metadata_V_V_TREADY(axis_rx_metadata.ready),
-.m_axis_rx_data_rsp_metadata_V_V_TDATA(axis_rx_metadata.data),
+.m_axis_rx_data_rsp_metadata_TVALID(axis_rx_metadata.valid),
+.m_axis_rx_data_rsp_metadata_TREADY(axis_rx_metadata.ready),
+.m_axis_rx_data_rsp_metadata_TDATA(axis_rx_metadata.data),
 .m_axis_rx_data_rsp_TVALID(m_axis_rx_data.valid),
 .m_axis_rx_data_rsp_TREADY(m_axis_rx_data.ready),
 .m_axis_rx_data_rsp_TDATA(m_axis_rx_data.data),
@@ -414,24 +424,24 @@ toe_ip toe_inst (
 .m_axis_rx_data_rsp_TLAST(m_axis_rx_data.last),
 
 // tx data
-.s_axis_tx_data_req_metadata_V_TVALID(axis_tx_metadata.valid),
-.s_axis_tx_data_req_metadata_V_TREADY(axis_tx_metadata.ready),
-.s_axis_tx_data_req_metadata_V_TDATA(axis_tx_metadata.data),
+.s_axis_tx_data_req_metadata_TVALID(axis_tx_metadata.valid),
+.s_axis_tx_data_req_metadata_TREADY(axis_tx_metadata.ready),
+.s_axis_tx_data_req_metadata_TDATA(axis_tx_metadata.data),
 .s_axis_tx_data_req_TVALID(s_axis_tx_data.valid),
 .s_axis_tx_data_req_TREADY(s_axis_tx_data.ready),
 .s_axis_tx_data_req_TDATA(s_axis_tx_data.data),
 .s_axis_tx_data_req_TKEEP(s_axis_tx_data.keep),
 .s_axis_tx_data_req_TLAST(s_axis_tx_data.last),
-.m_axis_tx_data_rsp_V_TVALID(m_axis_tx_status.valid),
-.m_axis_tx_data_rsp_V_TREADY(m_axis_tx_status.ready),
-.m_axis_tx_data_rsp_V_TDATA(m_axis_tx_status.data),
+.m_axis_tx_data_rsp_TVALID(m_axis_tx_status.valid),
+.m_axis_tx_data_rsp_TREADY(m_axis_tx_status.ready),
+.m_axis_tx_data_rsp_TDATA(m_axis_tx_status.data),
 
-.myIpAddress_V(local_ip_address),
-.regSessionCount_V(session_count_data),
-.regSessionCount_V_ap_vld(session_count_valid),
+.myIpAddress(local_ip_address),
+.regSessionCount(session_count_data),
+.regSessionCount_ap_vld(session_count_valid),
 //for external RX Buffer
-.axis_data_count_V(rx_buffer_data_count_reg2),
-.axis_max_data_count_V(16'd1024),
+.axis_data_count(rx_buffer_data_count_reg2),
+.axis_max_data_count(16'd1024),
 
 .ap_clk(net_clk),                                                        // input aclk
 .ap_rst_n(net_aresetn_r)                                                   // input aresetn
@@ -549,27 +559,44 @@ end //RX_DDR_BYPASS_EN
 .debug()
 );*/
 
-logic       ht_insert_failure_count_valid;
+// logic       ht_insert_failure_count_valid;
 logic[15:0] ht_insert_failure_count;
 
 hash_table_ip hash_table_inst (
   .ap_clk(net_clk),
   .ap_rst_n(net_aresetn_rr),
-  .s_axis_lup_req_V_TVALID(axis_ht_lup_req.valid),
-  .s_axis_lup_req_V_TREADY(axis_ht_lup_req.ready),
-  .s_axis_lup_req_V_TDATA(axis_ht_lup_req.data),
-  .m_axis_lup_rsp_V_TVALID(axis_ht_lup_rsp.valid),
-  .m_axis_lup_rsp_V_TREADY(axis_ht_lup_rsp.ready),
-  .m_axis_lup_rsp_V_TDATA(axis_ht_lup_rsp.data),
-  .s_axis_upd_req_V_TVALID(axis_ht_upd_req.valid),
-  .s_axis_upd_req_V_TREADY(axis_ht_upd_req.ready),
-  .s_axis_upd_req_V_TDATA(axis_ht_upd_req.data),
-  .m_axis_upd_rsp_V_TVALID(axis_ht_upd_rsp.valid),
-  .m_axis_upd_rsp_V_TREADY(axis_ht_upd_rsp.ready),
-  .m_axis_upd_rsp_V_TDATA(axis_ht_upd_rsp.data),
-  .regInsertFailureCount_V_ap_vld(ht_insert_failure_count_valid),
-  .regInsertFailureCount_V(ht_insert_failure_count)
+  .s_axis_lup_req_TVALID(axis_ht_lup_req.valid),
+  .s_axis_lup_req_TREADY(axis_ht_lup_req.ready),
+  .s_axis_lup_req_TDATA(axis_ht_lup_req.data),
+  .m_axis_lup_rsp_TVALID(axis_ht_lup_rsp.valid),
+  .m_axis_lup_rsp_TREADY(axis_ht_lup_rsp.ready),
+  .m_axis_lup_rsp_TDATA(axis_ht_lup_rsp.data),
+  .s_axis_upd_req_TVALID(axis_ht_upd_req.valid),
+  .s_axis_upd_req_TREADY(axis_ht_upd_req.ready),
+  .s_axis_upd_req_TDATA(axis_ht_upd_req.data),
+  .m_axis_upd_rsp_TVALID(axis_ht_upd_rsp.valid),
+  .m_axis_upd_rsp_TREADY(axis_ht_upd_rsp.ready),
+  .m_axis_upd_rsp_TDATA(axis_ht_upd_rsp.data),
+  // .regInsertFailureCount_ap_vld(ht_insert_failure_count_valid),
+  .regInsertFailureCount(ht_insert_failure_count)
 );
+
+
+// ila_hash_table inst_ila_hash_table (
+//   .clk(net_clk),
+//   .probe0(axis_ht_lup_req.valid), // 1
+//   .probe1(axis_ht_lup_req.ready), // 1
+//   .probe2(axis_ht_lup_req.data), // 96
+//   .probe3(axis_ht_lup_rsp.valid), // 1
+//   .probe4(axis_ht_lup_rsp.ready), // 1
+//   .probe5(axis_ht_lup_rsp.data), // 120
+//   .probe6(axis_ht_upd_req.valid), // 1
+//   .probe7(axis_ht_upd_req.ready), // 1
+//   .probe8(axis_ht_upd_req.data), // 144
+//   .probe9(axis_ht_upd_rsp.valid), // 1
+//   .probe10(axis_ht_upd_rsp.ready), // 1
+//   .probe11(axis_ht_upd_rsp.data) //152
+// );
 
 if (WIDTH==64) begin
 //TCP Data Path
@@ -838,7 +865,7 @@ axis_register_slice_48 open_connection_slice (
   .m_axis_tdata(axis_open_connection.data)    // output wire [7 : 0] m_axis_tdata
 );
 
-axis_register_slice_24 open_status_slice (
+axis_register_slice_72 open_status_slice (
   .aclk(net_clk),                    // input wire aclk
   .aresetn(net_aresetn_rr),              // input wire aresetn
   .s_axis_tvalid(axis_open_status.valid),  // input wire s_axis_tvalid

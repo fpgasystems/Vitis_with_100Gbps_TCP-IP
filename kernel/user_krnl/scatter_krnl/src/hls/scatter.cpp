@@ -111,6 +111,41 @@ void closeConnection_handler(hls::stream<ap_uint<16> >& closeConnectionBuffer,
 	
 }
 
+template <int WIDTH>
+void txDataBuffer_handler(hls::stream<net_axis<WIDTH> >& txDataBuffer,
+							hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& txData)
+{
+	#pragma HLS PIPELINE II=1
+	#pragma HLS INLINE off
+
+	if (!txDataBuffer.empty())
+	{
+		net_axis<WIDTH> inWord = txDataBuffer.read();
+		ap_axiu<WIDTH, 0, 0, 0> outWord;
+		outWord.data = inWord.data;
+		outWord.keep = inWord.keep;
+		outWord.last = inWord.last;
+		txData.write(outWord);
+	}
+}
+
+template <int WIDTH>
+void rxDataBuffer_handler(hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& rxData,
+						hls::stream<net_axis<WIDTH> >& rxDataBuffer)
+{
+	#pragma HLS PIPELINE II=1
+	#pragma HLS INLINE off
+
+	if (!rxData.empty())
+	{
+		ap_axiu<WIDTH, 0, 0, 0> inWord = rxData.read();
+		net_axis<WIDTH> outWord;
+		outWord.data = inWord.data;
+		outWord.keep = inWord.keep;
+		outWord.last = inWord.last;
+		rxDataBuffer.write(outWord);
+	}
+}
 
 template <int WIDTH>
 void client(	hls::stream<ipTuple>&		openConnection,
@@ -454,12 +489,12 @@ void scatter(	hls::stream<ap_uint<16> >& listenPort,
 					hls::stream<appNotification>& notifications,
 					hls::stream<appReadRequest>& readRequest,
 					hls::stream<ap_uint<16> >& rxMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& rxData,
+					hls::stream<ap_axiu<DATA_WIDTH, 0, 0, 0> >& rxData,
 					hls::stream<ipTuple>& openConnection,
 					hls::stream<openStatus>& openConStatus,
 					hls::stream<ap_uint<16> >& closeConnection,
 					hls::stream<appTxMeta>& txMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& txData,
+					hls::stream<ap_axiu<DATA_WIDTH, 0, 0, 0> >& txData,
 					hls::stream<appTxRsp>& txStatus,
 					ap_uint<1>		runExperiment,
 					ap_uint<16>		useConn,
@@ -492,24 +527,24 @@ void scatter(	hls::stream<ap_uint<16> >& listenPort,
 
 	#pragma HLS INTERFACE axis register port=notifications name=s_axis_notifications
 	#pragma HLS INTERFACE axis register port=readRequest name=m_axis_read_package
-	#pragma HLS DATA_PACK variable=notifications
-	#pragma HLS DATA_PACK variable=readRequest
+	#pragma HLS aggregate compact=bit variable=notifications
+	#pragma HLS aggregate compact=bit variable=readRequest
 
 	#pragma HLS INTERFACE axis register port=rxMetaData name=s_axis_rx_metadata
 	#pragma HLS INTERFACE axis register port=rxData name=s_axis_rx_data
 
 	#pragma HLS INTERFACE axis register port=openConnection name=m_axis_open_connection
 	#pragma HLS INTERFACE axis register port=openConStatus name=s_axis_open_status
-	#pragma HLS DATA_PACK variable=openConnection
-	#pragma HLS DATA_PACK variable=openConStatus
+	#pragma HLS aggregate compact=bit variable=openConnection
+	#pragma HLS aggregate compact=bit variable=openConStatus
 
 	#pragma HLS INTERFACE axis register port=closeConnection name=m_axis_close_connection
 
 	#pragma HLS INTERFACE axis register port=txMetaData name=m_axis_tx_metadata
 	#pragma HLS INTERFACE axis register port=txData name=m_axis_tx_data
 	#pragma HLS INTERFACE axis register port=txStatus name=s_axis_tx_status
-	#pragma HLS DATA_PACK variable=txMetaData
-	#pragma HLS DATA_PACK variable=txStatus
+	#pragma HLS aggregate compact=bit variable=txMetaData
+	#pragma HLS aggregate compact=bit variable=txStatus
 
 
 
@@ -547,18 +582,28 @@ void scatter(	hls::stream<ap_uint<16> >& listenPort,
 	static hls::stream<ap_uint<16> >	closeConnectionBuffer("closeConnectionBuffer");
 	#pragma HLS STREAM variable=closeConnectionBuffer depth=512
 
+	//This is required to buffer up to MAX_SESSIONS txData 
+	static hls::stream<net_axis<DATA_WIDTH> >	txDataBuffer("txDataBuffer");
+	#pragma HLS STREAM variable=txDataBuffer depth=512
+
+	//This is required to buffer up to MAX_SESSIONS txData 
+	static hls::stream<net_axis<DATA_WIDTH> >	rxDataBuffer("rxDataBuffer");
+	#pragma HLS STREAM variable=rxDataBuffer depth=512
+
 	/*
 	 * Client
 	 */
 
 	openStatus_handler(openConStatus, openConStatusBuffer);
 	txStatus_handler(txStatus, txStatusBuffer);
+	txDataBuffer_handler<DATA_WIDTH>(txDataBuffer, txData);
+	rxDataBuffer_handler<DATA_WIDTH>(rxData, rxDataBuffer);
 
 	client<DATA_WIDTH>(	openConnection,
 			openConStatusBuffer,
 			closeConnectionBuffer,
 			txMetaDataBuffer,
-			txData,
+			txDataBuffer,
 			txStatusBuffer,
 			runExperiment,
 			useConn,
@@ -590,7 +635,7 @@ void scatter(	hls::stream<ap_uint<16> >& listenPort,
 			notifications,
 			readRequest,
 			rxMetaData,
-			rxData,
+			rxDataBuffer,
 			runExperiment,
 			usePort, //total number of listen port
             regBasePort);

@@ -1,6 +1,4 @@
 [connectivity] 
-sp=network_krnl_1.m00_axi:HBM[30]
-sp=network_krnl_1.m01_axi:HBM[31]
 sc=network_krnl_1.m_axis_udp_rx:hls_gather_krnl_1.s_axis_udp_rx
 sc=network_krnl_1.m_axis_udp_rx_meta:hls_gather_krnl_1.s_axis_udp_rx_meta
 sc=network_krnl_1.m_axis_tcp_port_status:hls_gather_krnl_1.s_axis_tcp_port_status

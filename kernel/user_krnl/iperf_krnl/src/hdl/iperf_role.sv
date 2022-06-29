@@ -78,7 +78,7 @@ module iperf_role
 
     input wire                                     s_axis_tcp_open_status_tvalid ,
     output  wire                                   s_axis_tcp_open_status_tready ,
-    input wire [24-1:0]                            s_axis_tcp_open_status_tdata  ,
+    input wire [128-1:0]                            s_axis_tcp_open_status_tdata  ,
 
     output  wire                                   m_axis_tcp_close_connection_tvalid ,
     input wire                                     m_axis_tcp_close_connection_tready ,
@@ -293,67 +293,67 @@ end
 
 
 iperf_client_ip iperf_client (
-   .m_axis_close_connection_V_V_TVALID(m_axis_tcp_close_connection_tvalid),      // output wire m_axis_close_connection_TVALID
-   .m_axis_close_connection_V_V_TREADY(m_axis_tcp_close_connection_tready),      // input wire m_axis_close_connection_TREADY
-   .m_axis_close_connection_V_V_TDATA(m_axis_tcp_close_connection_tdata),        // output wire [15 : 0] m_axis_close_connection_TDATA
-   .m_axis_listen_port_V_V_TVALID(m_axis_tcp_listen_port_tvalid),                // output wire m_axis_listen_port_TVALID
-   .m_axis_listen_port_V_V_TREADY(m_axis_tcp_listen_port_tready),                // input wire m_axis_listen_port_TREADY
-   .m_axis_listen_port_V_V_TDATA(m_axis_tcp_listen_port_tdata),                  // output wire [15 : 0] m_axis_listen_port_TDATA
-   .m_axis_open_connection_V_TVALID(m_axis_tcp_open_connection_tvalid),        // output wire m_axis_open_connection_TVALID
-   .m_axis_open_connection_V_TREADY(m_axis_tcp_open_connection_tready),        // input wire m_axis_open_connection_TREADY
-   .m_axis_open_connection_V_TDATA(m_axis_tcp_open_connection_tdata),          // output wire [47 : 0] m_axis_open_connection_TDATA
-   .m_axis_read_package_V_TVALID(m_axis_tcp_read_pkg_tvalid),              // output wire m_axis_read_package_TVALID
-   .m_axis_read_package_V_TREADY(m_axis_tcp_read_pkg_tready),              // input wire m_axis_read_package_TREADY
-   .m_axis_read_package_V_TDATA(m_axis_tcp_read_pkg_tdata),                // output wire [31 : 0] m_axis_read_package_TDATA
+   .m_axis_close_connection_TVALID(m_axis_tcp_close_connection_tvalid),      // output wire m_axis_close_connection_TVALID
+   .m_axis_close_connection_TREADY(m_axis_tcp_close_connection_tready),      // input wire m_axis_close_connection_TREADY
+   .m_axis_close_connection_TDATA(m_axis_tcp_close_connection_tdata),        // output wire [15 : 0] m_axis_close_connection_TDATA
+   .m_axis_listen_port_TVALID(m_axis_tcp_listen_port_tvalid),                // output wire m_axis_listen_port_TVALID
+   .m_axis_listen_port_TREADY(m_axis_tcp_listen_port_tready),                // input wire m_axis_listen_port_TREADY
+   .m_axis_listen_port_TDATA(m_axis_tcp_listen_port_tdata),                  // output wire [15 : 0] m_axis_listen_port_TDATA
+   .m_axis_open_connection_TVALID(m_axis_tcp_open_connection_tvalid),        // output wire m_axis_open_connection_TVALID
+   .m_axis_open_connection_TREADY(m_axis_tcp_open_connection_tready),        // input wire m_axis_open_connection_TREADY
+   .m_axis_open_connection_TDATA(m_axis_tcp_open_connection_tdata),          // output wire [47 : 0] m_axis_open_connection_TDATA
+   .m_axis_read_package_TVALID(m_axis_tcp_read_pkg_tvalid),              // output wire m_axis_read_package_TVALID
+   .m_axis_read_package_TREADY(m_axis_tcp_read_pkg_tready),              // input wire m_axis_read_package_TREADY
+   .m_axis_read_package_TDATA(m_axis_tcp_read_pkg_tdata),                // output wire [31 : 0] m_axis_read_package_TDATA
    .m_axis_tx_data_TVALID(m_axis_tcp_tx_data_tvalid),                        // output wire m_axis_tx_data_TVALID
    .m_axis_tx_data_TREADY(m_axis_tcp_tx_data_tready),                        // input wire m_axis_tx_data_TREADY
    .m_axis_tx_data_TDATA(m_axis_tcp_tx_data_tdata),                          // output wire [63 : 0] m_axis_tx_data_TDATA
    .m_axis_tx_data_TKEEP(m_axis_tcp_tx_data_tkeep),                          // output wire [7 : 0] m_axis_tx_data_TKEEP
    .m_axis_tx_data_TLAST(m_axis_tcp_tx_data_tlast),                          // output wire [0 : 0] m_axis_tx_data_TLAST
-   .m_axis_tx_metadata_V_TVALID(m_axis_tcp_tx_meta_tvalid),                // output wire m_axis_tx_metadata_TVALID
-   .m_axis_tx_metadata_V_TREADY(m_axis_tcp_tx_meta_tready),                // input wire m_axis_tx_metadata_TREADY
-   .m_axis_tx_metadata_V_TDATA(m_axis_tcp_tx_meta_tdata),                  // output wire [15 : 0] m_axis_tx_metadata_TDATA
-   .s_axis_listen_port_status_V_TVALID(s_axis_tcp_port_status_tvalid),  // input wire s_axis_listen_port_status_TVALID
-   .s_axis_listen_port_status_V_TREADY(s_axis_tcp_port_status_tready),  // output wire s_axis_listen_port_status_TREADY
-   .s_axis_listen_port_status_V_TDATA(s_axis_tcp_port_status_tdata),    // input wire [7 : 0] s_axis_listen_port_status_TDATA
-   .s_axis_notifications_V_TVALID(s_axis_tcp_notification_tvalid),            // input wire s_axis_notifications_TVALID
-   .s_axis_notifications_V_TREADY(s_axis_tcp_notification_tready),            // output wire s_axis_notifications_TREADY
-   .s_axis_notifications_V_TDATA(s_axis_tcp_notification_tdata),              // input wire [87 : 0] s_axis_notifications_TDATA
-   .s_axis_open_status_V_TVALID(s_axis_tcp_open_status_tvalid),                // input wire s_axis_open_status_TVALID
-   .s_axis_open_status_V_TREADY(s_axis_tcp_open_status_tready),                // output wire s_axis_open_status_TREADY
-   .s_axis_open_status_V_TDATA(s_axis_tcp_open_status_tdata),                  // input wire [23 : 0] s_axis_open_status_TDATA
+   .m_axis_tx_metadata_TVALID(m_axis_tcp_tx_meta_tvalid),                // output wire m_axis_tx_metadata_TVALID
+   .m_axis_tx_metadata_TREADY(m_axis_tcp_tx_meta_tready),                // input wire m_axis_tx_metadata_TREADY
+   .m_axis_tx_metadata_TDATA(m_axis_tcp_tx_meta_tdata),                  // output wire [15 : 0] m_axis_tx_metadata_TDATA
+   .s_axis_listen_port_status_TVALID(s_axis_tcp_port_status_tvalid),  // input wire s_axis_listen_port_status_TVALID
+   .s_axis_listen_port_status_TREADY(s_axis_tcp_port_status_tready),  // output wire s_axis_listen_port_status_TREADY
+   .s_axis_listen_port_status_TDATA(s_axis_tcp_port_status_tdata),    // input wire [7 : 0] s_axis_listen_port_status_TDATA
+   .s_axis_notifications_TVALID(s_axis_tcp_notification_tvalid),            // input wire s_axis_notifications_TVALID
+   .s_axis_notifications_TREADY(s_axis_tcp_notification_tready),            // output wire s_axis_notifications_TREADY
+   .s_axis_notifications_TDATA(s_axis_tcp_notification_tdata),              // input wire [87 : 0] s_axis_notifications_TDATA
+   .s_axis_open_status_TVALID(s_axis_tcp_open_status_tvalid),                // input wire s_axis_open_status_TVALID
+   .s_axis_open_status_TREADY(s_axis_tcp_open_status_tready),                // output wire s_axis_open_status_TREADY
+   .s_axis_open_status_TDATA(s_axis_tcp_open_status_tdata),                  // input wire [23 : 0] s_axis_open_status_TDATA
    .s_axis_rx_data_TVALID(s_axis_tcp_rx_data_tvalid),                        // input wire s_axis_rx_data_TVALID
    .s_axis_rx_data_TREADY(s_axis_tcp_rx_data_tready),                        // output wire s_axis_rx_data_TREADY
    .s_axis_rx_data_TDATA(s_axis_tcp_rx_data_tdata),                          // input wire [63 : 0] s_axis_rx_data_TDATA
    .s_axis_rx_data_TKEEP(s_axis_tcp_rx_data_tkeep),                          // input wire [7 : 0] s_axis_rx_data_TKEEP
    .s_axis_rx_data_TLAST(s_axis_tcp_rx_data_tlast),                          // input wire [0 : 0] s_axis_rx_data_TLAST
-   .s_axis_rx_metadata_V_V_TVALID(s_axis_tcp_rx_meta_tvalid),                // input wire s_axis_rx_metadata_TVALID
-   .s_axis_rx_metadata_V_V_TREADY(s_axis_tcp_rx_meta_tready),                // output wire s_axis_rx_metadata_TREADY
-   .s_axis_rx_metadata_V_V_TDATA(s_axis_tcp_rx_meta_tdata),                  // input wire [15 : 0] s_axis_rx_metadata_TDATA
-   .s_axis_tx_status_V_TVALID(s_axis_tcp_tx_status_tvalid),                    // input wire s_axis_tx_status_TVALID
-   .s_axis_tx_status_V_TREADY(s_axis_tcp_tx_status_tready),                    // output wire s_axis_tx_status_TREADY
-   .s_axis_tx_status_V_TDATA(s_axis_tcp_tx_status_tdata),                      // input wire [23 : 0] s_axis_tx_status_TDATA
+   .s_axis_rx_metadata_TVALID(s_axis_tcp_rx_meta_tvalid),                // input wire s_axis_rx_metadata_TVALID
+   .s_axis_rx_metadata_TREADY(s_axis_tcp_rx_meta_tready),                // output wire s_axis_rx_metadata_TREADY
+   .s_axis_rx_metadata_TDATA(s_axis_tcp_rx_meta_tdata),                  // input wire [15 : 0] s_axis_rx_metadata_TDATA
+   .s_axis_tx_status_TVALID(s_axis_tcp_tx_status_tvalid),                    // input wire s_axis_tx_status_TVALID
+   .s_axis_tx_status_TREADY(s_axis_tcp_tx_status_tready),                    // output wire s_axis_tx_status_TREADY
+   .s_axis_tx_status_TDATA(s_axis_tcp_tx_status_tdata),                      // input wire [23 : 0] s_axis_tx_status_TDATA
    
    //Client only
-   .runExperiment_V(runExperiment),
-   .dualModeEn_V(dualMode),                                          // input wire [0 : 0] dualModeEn_V
-   .useConn_V(useConnReg),                                                // input wire [7 : 0] useConn_V
-   .pkgWordCount_V(pkgWordCountReg),                                      // input wire [7 : 0] pkgWordCount_V
-   .packetGap_V(packetGap),
-   .timeInSeconds_V(timeInSeconds),
-   .timeInCycles_V(timeInCycles),
-   .regBasePort_V(regBasePort),
-   .useIpAddr_V(UseIpAddrReg),
-   .regIpAddress0_V(regIpAddress[0]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress1_V(regIpAddress[1]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress2_V(regIpAddress[2]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress3_V(regIpAddress[3]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress4_V(regIpAddress[4]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress5_V(regIpAddress[5]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress6_V(regIpAddress[6]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress7_V(regIpAddress[7]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress8_V(regIpAddress[8]),                                    // input wire [31 : 0] regIpAddress1_V
-   .regIpAddress9_V(regIpAddress[9]),                                    // input wire [31 : 0] regIpAddress1_V
+   .runExperiment(runExperiment),
+   .dualModeEn(dualMode),                                          // input wire [0 : 0] dualModeEn
+   .useConn(useConnReg),                                                // input wire [7 : 0] useConn
+   .pkgWordCount(pkgWordCountReg),                                      // input wire [7 : 0] pkgWordCount
+   .packetGap(packetGap),
+   .timeInSeconds(timeInSeconds),
+   .timeInCycles(timeInCycles),
+   .regBasePort(regBasePort),
+   .useIpAddr(UseIpAddrReg),
+   .regIpAddress0(regIpAddress[0]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress1(regIpAddress[1]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress2(regIpAddress[2]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress3(regIpAddress[3]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress4(regIpAddress[4]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress5(regIpAddress[5]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress6(regIpAddress[6]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress7(regIpAddress[7]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress8(regIpAddress[8]),                                    // input wire [31 : 0] regIpAddress1
+   .regIpAddress9(regIpAddress[9]),                                    // input wire [31 : 0] regIpAddress1
    .ap_clk(ap_clk),                                                          // input wire aclk
    .ap_rst_n(ap_rst_n)                                                    // input wire aresetn
  );

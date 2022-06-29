@@ -10,7 +10,7 @@
       <port name="m_axis_tcp_listen_port" mode="write_only" dataWidth="16" portType="stream"/>
       <port name="s_axis_tcp_port_status" mode="read_only" dataWidth="8" portType="stream"/>
       <port name="m_axis_tcp_open_connection" mode="write_only" dataWidth="64" portType="stream"/>
-      <port name="s_axis_tcp_open_status" mode="read_only" dataWidth="32" portType="stream"/>
+      <port name="s_axis_tcp_open_status" mode="read_only" dataWidth="128" portType="stream"/>
       <port name="m_axis_tcp_close_connection" mode="write_only" dataWidth="16" portType="stream"/>
       <port name="s_axis_tcp_notification" mode="read_only" dataWidth="128" portType="stream"/>
       <port name="m_axis_tcp_read_pkg" mode="write_only" dataWidth="32" portType="stream"/>
@@ -37,7 +37,7 @@
       <arg name="m_axis_tcp_listen_port" addressQualifier="4" id="13" port="m_axis_tcp_listen_port" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;16,0,0,0>>&amp;" />
       <arg name="s_axis_tcp_port_status" addressQualifier="4" id="14" port="s_axis_tcp_port_status" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;8,0,0,0>>&amp;" />
       <arg name="m_axis_tcp_open_connection" addressQualifier="4" id="15" port="m_axis_tcp_open_connection" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;64,0,0,0>>&amp;" />
-      <arg name="s_axis_tcp_open_status" addressQualifier="4" id="16" port="s_axis_tcp_open_status" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;32,0,0,0>>&amp;" />
+      <arg name="s_axis_tcp_open_status" addressQualifier="4" id="16" port="s_axis_tcp_open_status" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;128,0,0,0>>&amp;" />
       <arg name="m_axis_tcp_close_connection" addressQualifier="4" id="17" port="m_axis_tcp_close_connection" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;16,0,0,0>>&amp;" />
       <arg name="s_axis_tcp_notification" addressQualifier="4" id="18" port="s_axis_tcp_notification" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;128,0,0,0>>&amp;" />
       <arg name="m_axis_tcp_read_pkg" addressQualifier="4" id="19" port="m_axis_tcp_read_pkg" size="0" offset="0" hostOffset="0" hostSize="0" memSize="0" type="stream&lt;qdma_axis&lt;32,0,0,0>>&amp;" />
@@ -49,3 +49,4 @@
     </args>
   </kernel>
 </root>
+

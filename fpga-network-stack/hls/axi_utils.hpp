@@ -32,7 +32,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
+#include "ap_axi_sdata.h"
 //Adaptation of ap_axiu<>
 
 /*template <int D>
@@ -68,6 +68,65 @@ struct routed_net_axis
 	routed_net_axis(net_axis<D> w, ap_uint<R> r)
 		:data(w.data), keep(w.keep), last(w.last), dest(r) {}
 };
+
+template <int WIDTH>
+void convert_net_axis_to_axis(hls::stream<net_axis<WIDTH> >& input,
+							hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& output)
+{
+#pragma HLS pipeline II=1
+
+	net_axis<WIDTH> inputWord;
+	ap_axiu<WIDTH, 0, 0, 0> outputWord;
+
+	if (!input.empty())
+	{
+		inputWord = input.read();
+		outputWord.data = inputWord.data;
+		outputWord.keep = inputWord.keep;
+		outputWord.last = inputWord.last;
+		output.write(outputWord);
+	}
+}
+
+
+template <int WIDTH>
+void convert_axis_to_net_axis(hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& input,
+							hls::stream<net_axis<WIDTH> >& output)
+{
+#pragma HLS pipeline II=1
+
+	ap_axiu<WIDTH, 0, 0, 0> inputWord;
+	net_axis<WIDTH> outputWord;
+	
+	if (!input.empty())
+	{
+		inputWord = input.read();
+		outputWord.data = inputWord.data;
+		outputWord.keep = inputWord.keep;
+		outputWord.last = inputWord.last;
+		output.write(outputWord);
+	}
+}
+
+template <int WIDTH, int DST=1>
+void convert_routed_net_axis_to_axis(hls::stream<routed_net_axis<WIDTH, DST> >& input,
+							hls::stream<ap_axiu<WIDTH, 0, 0, DST> >& output)
+{
+#pragma HLS pipeline II=1
+
+	routed_net_axis<WIDTH, DST> inputWord;
+	ap_axiu<WIDTH, 0, 0, DST> outputWord;
+
+	if (!input.empty())
+	{
+		inputWord = input.read();
+		outputWord.data = inputWord.data;
+		outputWord.keep = inputWord.keep;
+		outputWord.last = inputWord.last;
+		outputWord.dest = inputWord.dest;
+		output.write(outputWord);
+	}
+}
 
 template<int D>
 ap_uint<D> reverse(const ap_uint<D>& w)

@@ -564,11 +564,11 @@ cmac_usplus_axis cmac_axis_inst (
 //     .probe13(tx_reset_done) // input wire [0:0]  probe9
 // );
 
-// ila_0 inst_ila_0 (
-//     .clk(gt_txusrclk2),
-//     //rx
-//     .probe0(stat_rx_aligned_1d)
-// );
+ila_0 inst_ila_0 (
+    .clk(gt_txusrclk2),
+    //rx
+    .probe0(stat_rx_aligned_1d)
+);
 
 
 `ifdef DEBUG

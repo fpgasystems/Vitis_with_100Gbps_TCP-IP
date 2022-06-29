@@ -1,0 +1,2 @@
+[connectivity] 
+slr=cmac_krnl_1:${CMAC_SLR}

@@ -100,6 +100,7 @@ static hls::stream<ap_uint<512> >    s_data_out;
 #pragma HLS dataflow
 
           ap_uint<16> sessionTable [32];
+          // #pragma HLS array_partition variable=sessionTable complete dim=0
           
           int pkgWordCount = 16;
           

@@ -71,7 +71,7 @@ module network_krnl #(
   parameter integer C_S_AXIS_TCP_LISTEN_PORT_TDATA_WIDTH      = 16 ,
   parameter integer C_M_AXIS_TCP_PORT_STATUS_TDATA_WIDTH      = 8  ,
   parameter integer C_S_AXIS_TCP_OPEN_CONNECTION_TDATA_WIDTH  = 64 ,
-  parameter integer C_M_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 32 ,
+  parameter integer C_M_AXIS_TCP_OPEN_STATUS_TDATA_WIDTH      = 128 ,
   parameter integer C_S_AXIS_TCP_CLOSE_CONNECTION_TDATA_WIDTH = 16 ,
   parameter integer C_M_AXIS_TCP_NOTIFICATION_TDATA_WIDTH     = 128,
   parameter integer C_S_AXIS_TCP_READ_PKG_TDATA_WIDTH         = 32 ,
@@ -500,9 +500,9 @@ axis_data_fifo_64_d256 s_axis_tcp_open_connection_fifo (
 
 
 //open status
-axis_meta #(.WIDTH(24))     m_axis_tcp_open_status();
+axis_meta #(.WIDTH(72))     m_axis_tcp_open_status();
 
-axis_data_fifo_32_d256 m_axis_tcp_open_status_fifo (
+axis_data_fifo_72_d256 m_axis_tcp_open_status_fifo (
   //.s_axis_aresetn(~(sys_reset | user_rx_reset)),
   .s_axis_aresetn(~areset),
   .s_axis_aclk(ap_clk),

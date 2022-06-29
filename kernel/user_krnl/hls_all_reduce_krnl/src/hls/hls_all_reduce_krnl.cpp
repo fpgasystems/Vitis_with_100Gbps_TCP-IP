@@ -91,6 +91,9 @@ void hls_all_reduce_krnl(
 #pragma HLS INTERFACE s_axilite port = return bundle = control
 
 
+
+// ap_uint<64> totalRxByteCnt = expectedRxByteCnt*useConn;
+
 static hls::stream<ap_uint<512> >    s_data_out;
 #pragma HLS STREAM variable=s_data_out depth=512
 
@@ -118,12 +121,26 @@ static hls::stream<ap_uint<512> >    s_data_out;
               m_axis_tcp_tx_data, 
               s_axis_tcp_tx_status);
 
+          // reduce_sum<8, 32>(expectedRxByteCnt, 
+          // useConn,
+          // sessionTable,
+          // pkgWordCount,
+          // basePort,
+          // s_data_out,
+          // s_axis_tcp_notification, 
+          // m_axis_tcp_read_pkg, 
+          // s_axis_tcp_rx_meta, 
+          // s_axis_tcp_rx_data);
 
           stream2Ptr(data_out, expectedRxByteCnt, s_data_out);
      
           tie_off_tcp_open_connection(m_axis_tcp_open_connection, 
                s_axis_tcp_open_status);
 
+
+          // tie_off_tcp_tx(m_axis_tcp_tx_meta, 
+          //                m_axis_tcp_tx_data, 
+          //                s_axis_tcp_tx_status);
 
           tie_off_udp(s_axis_udp_rx, 
                m_axis_udp_tx, 

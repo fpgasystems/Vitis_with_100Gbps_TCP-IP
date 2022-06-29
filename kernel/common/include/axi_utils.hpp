@@ -33,7 +33,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-
+#include "ap_axi_sdata.h"
 #define AXI_WIDTH 64
 
 const uint16_t PMTU = 1400;
@@ -125,70 +125,70 @@ ap_uint<D> reverse_bits(const ap_uint<D>& w)
 	return temp;
 }
 
-template<int D>
-bool scan(std::istream& inputFile, ap_uint<D>& data)
-{
-	uint16_t temp;
-	for (int i = 0; i < D/8; i++)
-	{
-		if (inputFile >> std::hex >> temp)
-		{
-			data(i*8+7, i*8) = temp;
-		}
-		else
-		{
-			//std::cerr << "[ERROR]: could not scan input" << std::endl;
-			return false;
-		}
-	}
-	return inputFile;
-}
+// template<int D>
+// bool scan(std::istream& inputFile, ap_uint<D>& data)
+// {
+// 	uint16_t temp;
+// 	for (int i = 0; i < D/8; i++)
+// 	{
+// 		if (inputFile >> std::hex >> temp)
+// 		{
+// 			data(i*8+7, i*8) = temp;
+// 		}
+// 		else
+// 		{
+// 			//std::cerr << "[ERROR]: could not scan input" << std::endl;
+// 			return false;
+// 		}
+// 	}
+// 	return inputFile;
+// }
 
-template<int D>
-bool scan(std::istream& inputFile, net_axis<D>& word)
-{
-	uint16_t temp;
-	uint32_t keepTemp;
-	uint16_t lastTemp;
-	for (int i = 0; i < D/8; i++)
-	{
-		if (inputFile >> std::hex >> temp)
-		{
-			word.data(i*8+7, i*8) = temp;
-		}
-		else
-		{
-			//std::cerr << "[ERROR]: could not scan input" << std::endl;
-			return false;
-		}
-	}
-	inputFile >> keepTemp;
-	inputFile >> lastTemp;
-	word.keep = keepTemp;
-	word.last = lastTemp;
-	//if (!inputFile)
-	//	std::cerr << "[ERROR]: could not scan input" << std::endl;
-	return inputFile;
-}
+// template<int D>
+// bool scan(std::istream& inputFile, net_axis<D>& word)
+// {
+// 	uint16_t temp;
+// 	uint32_t keepTemp;
+// 	uint16_t lastTemp;
+// 	for (int i = 0; i < D/8; i++)
+// 	{
+// 		if (inputFile >> std::hex >> temp)
+// 		{
+// 			word.data(i*8+7, i*8) = temp;
+// 		}
+// 		else
+// 		{
+// 			//std::cerr << "[ERROR]: could not scan input" << std::endl;
+// 			return false;
+// 		}
+// 	}
+// 	inputFile >> keepTemp;
+// 	inputFile >> lastTemp;
+// 	word.keep = keepTemp;
+// 	word.last = lastTemp;
+// 	//if (!inputFile)
+// 	//	std::cerr << "[ERROR]: could not scan input" << std::endl;
+// 	return inputFile;
+// }
 
-template<int D>
-bool scanLE(std::istream& inputFile, ap_uint<D>& data)
-{
-	uint16_t temp;
-	for (int i = (D/8)-1; i >= 0; i--)
-	{
-		if (inputFile >> std::hex >> temp)
-		{
-			data(i*8+7, i*8) = temp;
-		}
-		else
-		{
-			//std::cerr << "[ERROR]: could not scan input" << std::endl;
-			return false;
-		}
-	}
-	return inputFile;
-}
+// template<int D>
+// bool scanLE(std::istream& inputFile, ap_uint<D>& data)
+// {
+// 	uint16_t temp;
+// 	for (int i = (D/8)-1; i >= 0; i--)
+// 	{
+// 		if (inputFile >> std::hex >> temp)
+// 		{
+// 			data(i*8+7, i*8) = temp;
+// 		}
+// 		else
+// 		{
+// 			//std::cerr << "[ERROR]: could not scan input" << std::endl;
+// 			return false;
+// 		}
+// 	}
+// 	return inputFile;
+// }
 
 template<int D>
 void print(std::ostream& output, ap_uint<D> data)

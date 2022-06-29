@@ -38,10 +38,10 @@ axi_stream m_axis_net_rx_aclk_r ();
 axi_stream s_axis_net_tx_aclk_r ();
 
 // Might be an overkill
-axis_data_reg_array #(.N_STAGES(5)) inst_reg_data_nclk1 (.aclk(net_clk), .aresetn(net_aresetn_reg), .s_axis(m_axis_net_rx_nclk), .m_axis(m_axis_net_rx_nclk_r));
-axis_data_reg_array #(.N_STAGES(5)) inst_reg_data_nclk2 (.aclk(net_clk), .aresetn(net_aresetn_reg), .s_axis(s_axis_net_tx_nclk_r), .m_axis(s_axis_net_tx_nclk));
-axis_data_reg_array #(.N_STAGES(5)) inst_reg_data_aclk1 (.aclk(pcie_clk), .aresetn(pcie_aresetn_reg), .s_axis(m_axis_net_rx_aclk_r), .m_axis(m_axis_net_rx_aclk));
-axis_data_reg_array #(.N_STAGES(5)) inst_reg_data_aclk2 (.aclk(pcie_clk), .aresetn(pcie_aresetn_reg), .s_axis(s_axis_net_tx_aclk), .m_axis(s_axis_net_tx_aclk_r));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_data_nclk1 (.aclk(net_clk), .aresetn(net_aresetn_reg), .s_axis(m_axis_net_rx_nclk), .m_axis(m_axis_net_rx_nclk_r));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_data_nclk2 (.aclk(net_clk), .aresetn(net_aresetn_reg), .s_axis(s_axis_net_tx_nclk_r), .m_axis(s_axis_net_tx_nclk));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_data_aclk1 (.aclk(pcie_clk), .aresetn(pcie_aresetn_reg), .s_axis(m_axis_net_rx_aclk_r), .m_axis(m_axis_net_rx_aclk));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_data_aclk2 (.aclk(pcie_clk), .aresetn(pcie_aresetn_reg), .s_axis(s_axis_net_tx_aclk), .m_axis(s_axis_net_tx_aclk_r));
 
 // Data
 axis_data_fifo_cc_udp_data inst_cc_udp_data_rx (

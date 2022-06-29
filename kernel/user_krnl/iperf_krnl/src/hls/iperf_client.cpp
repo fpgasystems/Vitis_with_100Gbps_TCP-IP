@@ -74,15 +74,37 @@ void txMetaData_handler(hls::stream<appTxMeta>&	txMetaDataBuffer,
 
 template <int WIDTH>
 void txDataBuffer_handler(hls::stream<net_axis<WIDTH> >& txDataBuffer,
-							hls::stream<net_axis<WIDTH> >& txData)
+							hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& txData)
 {
 	#pragma HLS PIPELINE II=1
 	#pragma HLS INLINE off
 
 	if (!txDataBuffer.empty())
 	{
-		net_axis<WIDTH> word = txDataBuffer.read();
-		txData.write(word);
+		net_axis<WIDTH> inWord = txDataBuffer.read();
+		ap_axiu<WIDTH, 0, 0, 0> outWord;
+		outWord.data = inWord.data;
+		outWord.keep = inWord.keep;
+		outWord.last = inWord.last;
+		txData.write(outWord);
+	}
+}
+
+template <int WIDTH>
+void rxDataBuffer_handler(hls::stream<ap_axiu<WIDTH, 0, 0, 0> >& rxData,
+						hls::stream<net_axis<WIDTH> >& rxDataBuffer)
+{
+	#pragma HLS PIPELINE II=1
+	#pragma HLS INLINE off
+
+	if (!rxData.empty())
+	{
+		ap_axiu<WIDTH, 0, 0, 0> inWord = rxData.read();
+		net_axis<WIDTH> outWord;
+		outWord.data = inWord.data;
+		outWord.keep = inWord.keep;
+		outWord.last = inWord.last;
+		rxDataBuffer.write(outWord);
 	}
 }
 
@@ -388,7 +410,7 @@ void server(	hls::stream<ap_uint<16> >&		listenPort,
 				hls::stream<appNotification>&	notifications,
 				hls::stream<appReadRequest>&	readRequest,
 				hls::stream<ap_uint<16> >&		rxMetaData,
-				hls::stream<net_axis<WIDTH> >&	rxData)
+				hls::stream<net_axis<WIDTH> >&	rxDataBuffer)
 {
 #pragma HLS PIPELINE II=1
 #pragma HLS INLINE off
@@ -431,10 +453,10 @@ void server(	hls::stream<ap_uint<16> >&		listenPort,
 	switch (serverFsmState)
 	{
 	case WAIT_PKG:
-		if (!rxMetaData.empty() && !rxData.empty())
+		if (!rxMetaData.empty() && !rxDataBuffer.empty())
 		{
 			rxMetaData.read();
-			net_axis<WIDTH> receiveWord = rxData.read();
+			net_axis<WIDTH> receiveWord = rxDataBuffer.read();
 			if (!receiveWord.last)
 			{
 				serverFsmState = CONSUME;
@@ -442,9 +464,9 @@ void server(	hls::stream<ap_uint<16> >&		listenPort,
 		}
 		break;
 	case CONSUME:
-		if (!rxData.empty())
+		if (!rxDataBuffer.empty())
 		{
-			net_axis<WIDTH> receiveWord = rxData.read();
+			net_axis<WIDTH> receiveWord = rxDataBuffer.read();
 			if (receiveWord.last)
 			{
 				serverFsmState = WAIT_PKG;
@@ -492,22 +514,22 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 					hls::stream<appNotification>& notifications,
 					hls::stream<appReadRequest>& readRequest,
 					hls::stream<ap_uint<16> >& rxMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& rxData,
+					hls::stream<ap_axiu<DATA_WIDTH, 0, 0, 0> >& rxData,
 					hls::stream<ipTuple>& openConnection,
 					hls::stream<openStatus>& openConStatus,
 					hls::stream<ap_uint<16> >& closeConnection,
 					hls::stream<appTxMeta>& txMetaData,
-					hls::stream<net_axis<DATA_WIDTH> >& txData,
+					hls::stream<ap_axiu<DATA_WIDTH, 0, 0, 0> >& txData,
 					hls::stream<appTxRsp>& txStatus,
 					ap_uint<1>		runExperiment,
 					ap_uint<1>		dualModeEn,
 					ap_uint<14>		useConn,
 					ap_uint<8>		pkgWordCount,
 					ap_uint<8>		packetGap,
-	               ap_uint<32>    timeInSeconds,
-	               ap_uint<64>    timeInCycles,
-	               ap_uint<16>		useIpAddr,
-	               ap_uint<16>		regBasePort,
+	               	ap_uint<32>    	timeInSeconds,
+	               	ap_uint<64>    	timeInCycles,
+	               	ap_uint<16>		useIpAddr,
+	               	ap_uint<16>		regBasePort,
 					ap_uint<32>		regIpAddress0,
 					ap_uint<32>		regIpAddress1,
 					ap_uint<32>		regIpAddress2,
@@ -528,24 +550,24 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 
 	#pragma HLS INTERFACE axis register port=notifications name=s_axis_notifications
 	#pragma HLS INTERFACE axis register port=readRequest name=m_axis_read_package
-	#pragma HLS DATA_PACK variable=notifications
-	#pragma HLS DATA_PACK variable=readRequest
+	#pragma HLS aggregate compact=bit variable=notifications
+	#pragma HLS aggregate compact=bit variable=readRequest
 
 	#pragma HLS INTERFACE axis register port=rxMetaData name=s_axis_rx_metadata
 	#pragma HLS INTERFACE axis register port=rxData name=s_axis_rx_data
 
 	#pragma HLS INTERFACE axis register port=openConnection name=m_axis_open_connection
 	#pragma HLS INTERFACE axis register port=openConStatus name=s_axis_open_status
-	#pragma HLS DATA_PACK variable=openConnection
-	#pragma HLS DATA_PACK variable=openConStatus
+	#pragma HLS aggregate compact=bit variable=openConnection
+	#pragma HLS aggregate compact=bit variable=openConStatus
 
 	#pragma HLS INTERFACE axis register port=closeConnection name=m_axis_close_connection
 
 	#pragma HLS INTERFACE axis register port=txMetaData name=m_axis_tx_metadata
 	#pragma HLS INTERFACE axis register port=txData name=m_axis_tx_data
 	#pragma HLS INTERFACE axis register port=txStatus name=s_axis_tx_status
-	#pragma HLS DATA_PACK variable=txMetaData
-	#pragma HLS DATA_PACK variable=txStatus
+	#pragma HLS aggregate compact=bit variable=txMetaData
+	#pragma HLS aggregate compact=bit variable=txStatus
 
 	#pragma HLS INTERFACE ap_none register port=runExperiment
 	#pragma HLS INTERFACE ap_none register port=dualModeEn
@@ -588,13 +610,18 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 	static hls::stream<net_axis<DATA_WIDTH> >	txDataBuffer("txDataBuffer");
 	#pragma HLS STREAM variable=txDataBuffer depth=512
 
+	//This is required to buffer up to MAX_SESSIONS txData 
+	static hls::stream<net_axis<DATA_WIDTH> >	rxDataBuffer("rxDataBuffer");
+	#pragma HLS STREAM variable=rxDataBuffer depth=512
+
 	/*
 	 * Client
 	 */
 	status_handler(txStatus, txStatusBuffer);
 	openStatus_handler(openConStatus, openConStatusBuffer);
 	txMetaData_handler(txMetaDataBuffer, txMetaData);
-	txDataBuffer_handler(txDataBuffer, txData);
+	txDataBuffer_handler<DATA_WIDTH>(txDataBuffer, txData);
+	rxDataBuffer_handler<DATA_WIDTH>(rxData, rxDataBuffer);
 
 	client<DATA_WIDTH>(	openConnection,
 			openConStatusBuffer,
@@ -631,7 +658,7 @@ void iperf_client(	hls::stream<ap_uint<16> >& listenPort,
 			notifications,
 			readRequest,
 			rxMetaData,
-			rxData);
+			rxDataBuffer);
 
 	/*
 	 * Clock

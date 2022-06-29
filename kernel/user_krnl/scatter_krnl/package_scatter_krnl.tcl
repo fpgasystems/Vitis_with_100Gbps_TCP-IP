@@ -54,7 +54,13 @@ set words [split $device "_"]
 set board [lindex $words 1]
 
 if {[string compare -nocase $board "u280"] == 0} {
-set projPart "xcu280-fsvh2892-2L-e"
+    set projPart "xcu280-fsvh2892-2L-e"
+} elseif {[string compare -nocase $board "u250"] == 0} {
+    set projPart "xcu250-figd2104-2L-e"
+} elseif {[string compare -nocase $board "u50"] == 0} {
+    set projPart "xcu50-fsvh2104-2-e"
+} elseif {[string compare -nocase $board "u55c"] == 0} {
+    set projPart "xcu55c-fsvh2892-2L-e"
 } else {
     puts "Unknown board $board"
     exit 
@@ -65,7 +71,6 @@ create_project -force $projName $path_to_tmp_project -part $projPart
 
 add_files -norecurse [glob $path_to_hdl/hdl/*.v $path_to_hdl/hdl/*.sv $path_to_hdl/hdl/*.svh ]
 add_files -norecurse [glob $path_to_common/types/*.v $path_to_common/types/*.sv $path_to_common/types/*.svh ]
-#add_files -norecurse [glob $path_to_common/*.v $path_to_common/*.sv $path_to_common/hdl/*.v $path_to_common/hdl/*.sv]
 
 set_property top scatter_krnl [current_fileset]
 update_compile_order -fileset sources_1
@@ -93,7 +98,7 @@ ipx::unload_core $path_to_packaged/component.xml
 ipx::edit_ip_in_project -upgrade true -name tmp_edit_project -directory $path_to_packaged $path_to_packaged/component.xml
 set_property core_revision 1 [ipx::current_core]
 foreach up [ipx::get_user_parameters] {
-  ipx::remove_user_parameter [get_property NAME $up] [ipx::current_core]
+    ipx::remove_user_parameter [get_property NAME $up] [ipx::current_core]
 }
 set_property sdx_kernel true [ipx::current_core]
 set_property sdx_kernel_type rtl [ipx::current_core]
@@ -104,32 +109,6 @@ set_property bus_type_vlnv xilinx.com:signal:clock:1.0 [ipx::get_bus_interfaces 
 ipx::add_port_map CLK [ipx::get_bus_interfaces ap_clk -of_objects [ipx::current_core]]
 set_property physical_name ap_clk [ipx::get_port_maps CLK -of_objects [ipx::get_bus_interfaces ap_clk -of_objects [ipx::current_core]]]
 
-#ipx::add_bus_interface ap_clk_2 [ipx::current_core]
-#set_property abstraction_type_vlnv xilinx.com:signal:clock_rtl:1.0 [ipx::get_bus_interfaces ap_clk_2 -of_objects [ipx::current_core]]
-#set_property bus_type_vlnv xilinx.com:signal:clock:1.0 [ipx::get_bus_interfaces ap_clk_2 -of_objects [ipx::current_core]]
-#ipx::add_port_map CLK2 [ipx::get_bus_interfaces ap_clk_2 -of_objects [ipx::current_core]]
-#set_property physical_name ap_clk_2 [ipx::get_port_maps CLK2 -of_objects [ipx::get_bus_interfaces ap_clk_2 -of_objects [ipx::current_core]]]
-#ipx::infer_bus_interface ap_rst_n_2 xilinx.com:signal:reset_rtl:1.0 [ipx::current_core]
-
-# Specify the freq_hz parameter 
-#set clkbif      [::ipx::get_bus_interfaces -of [ipx::current_core] "ap_clk"]
-#set clkbifparam [::ipx::add_bus_parameter -quiet "FREQ_HZ" $clkbif]
-# Set desired frequency                   
-#set_property value 250000000 $clkbifparam
-# set value_resolve_type 'user' if the frequency can vary. 
-#set_property value_resolve_type user $clkbifparam
-# set value_resolve_type 'immediate' if the frequency cannot change. 
-#set_property value_resolve_type immediate $clkbifparam
-
-# Specify the freq_hz parameter 
-#set clkbif      [::ipx::get_bus_interfaces -of [ipx::current_core] "ap_clk_2"]
-#set clkbifparam [::ipx::add_bus_parameter -quiet "FREQ_HZ" $clkbif]
-# Set desired frequency                   
-#set_property value 250000000 $clkbifparam
-# set value_resolve_type 'user' if the frequency can vary. 
-# set_property value_resolve_type user $clkbifparam
-# set value_resolve_type 'immediate' if the frequency cannot change. 
-#set_property value_resolve_type immediate $clkbifparam
 
 ipx::associate_bus_interfaces -busif s_axi_control -clock ap_clk [ipx::current_core]
 ipx::associate_bus_interfaces -busif m00_axi -clock ap_clk [ipx::current_core]

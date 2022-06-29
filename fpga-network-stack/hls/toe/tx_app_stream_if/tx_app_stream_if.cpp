@@ -218,7 +218,7 @@ void tasi_pkg_pusher(hls::stream<mmCmd>&					tasi_meta2pkgPushCmd,
 		{
 			net_axis<WIDTH> currWord = appTxDataIn.read();
          std::cout << "HELP: ";
-         printLE(std::cout, currWord);
+        //  printLE(std::cout, currWord);
          std::cout << std::endl;
 			txBufferWriteData.write(currWord);
 			if (currWord.last)
@@ -299,7 +299,7 @@ void tx_app_stream_if(	stream<appTxMeta>&				appTxDataReqMetaData,
 
 	static stream<mmCmd> tasi_meta2pkgPushCmd("tasi_meta2pkgPushCmd");
 	#pragma HLS stream variable=tasi_meta2pkgPushCmd depth=128
-	#pragma HLS DATA_PACK variable=tasi_meta2pkgPushCmd
+	#pragma HLS aggregate  variable=tasi_meta2pkgPushCmd compact=bit
 
 	tasi_metaLoader(	appTxDataReqMetaData,
 						stateTable2txApp_rsp,
@@ -313,7 +313,7 @@ void tx_app_stream_if(	stream<appTxMeta>&				appTxDataReqMetaData,
 #if (TCP_NODELAY)
 	static hls::stream<net_axis<WIDTH> > tasi_dataFifo("tasi_dataFifo");
 	#pragma HLS stream variable=tasi_dataFifo depth=1024
-	#pragma HLS DATA_PACK variable=tasi_dataFifo
+	#pragma HLS aggregate  variable=tasi_dataFifo compact=bit
 
 	toe_duplicate_stream(appTxDataReq, tasi_dataFifo, txApp2txEng_data_stream);
 #endif

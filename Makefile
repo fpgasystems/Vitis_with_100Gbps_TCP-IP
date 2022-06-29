@@ -57,9 +57,15 @@ BUILD_DIR := ./build_dir.$(TARGET).$(XSA)
 VPP := $(XILINX_VITIS)/bin/v++
 SDCARD := sd_card
 
+# Enable Profiling
+REPORT := yes
+PROFILE:= no
+
+
 #Include Libraries
 include $(ABS_COMMON_REPO)/common/includes/opencl/opencl.mk
 include $(ABS_COMMON_REPO)/common/includes/xcl2/xcl2.mk
+
 CXXFLAGS += $(xcl2_CXXFLAGS)
 LDFLAGS += $(xcl2_LDFLAGS)
 HOST_SRCS += $(xcl2_SRCS)
@@ -69,7 +75,7 @@ CXXFLAGS += $(opencl_CXXFLAGS) -Wall -O0 -g -std=gnu++14
 CXXFLAGS +=  -DVITIS_PLATFORM=$(VITIS_PLATFORM)
 LDFLAGS += $(opencl_LDFLAGS)
 
-HOST_SRCS += host/${USER_KRNL}/host.cpp
+HOST_SRCS += host/${USER_KRNL}/host.cpp #host/${USER_KRNL}/*/*.cpp
 # Host compiler global settings
 CXXFLAGS += -fmessage-length=0
 LDFLAGS += -lrt -lstdc++
@@ -80,7 +86,7 @@ endif
 
 # Kernel compiler global settings
 CLFLAGS += -t $(TARGET) --platform $(DEVICE) --save-temps #--config $(CONFIGLINKTCL)
-CLFLAGS += --kernel_frequency 250
+CLFLAGS += --kernel_frequency 200
 ifneq ($(TARGET), hw)
   CLFLAGS += -g
 endif
@@ -91,13 +97,28 @@ endif
 $(info $$DEVICE is [${DEVICE}])
 $(info $$POSTSYSLINKTCL is [${POSTSYSLINKTCL}])
 CLFLAGS += --advanced.param compiler.userPostSysLinkTcl=$(POSTSYSLINKTCL) #--xp param:compiler.userPostSysLinkTcl=$(POSTSYSLINKTCL)
-#CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_open_status --dk chipscope:network_krnl_1:s_axis_tcp_tx_meta --dk chipscope:network_krnl_1:s_axis_tcp_open_connection
-CLFLAGS += --config ./kernel/user_krnl/${USER_KRNL}/config_sp_${USER_KRNL}.txt
-# CLFLAGS += --profile_kernel stall:${USER_KRNL}:all:all
-#endif
+CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_open_status --dk chipscope:network_krnl_1:s_axis_tcp_tx_meta --dk chipscope:network_krnl_1:m_axis_tcp_tx_status  --dk chipscope:network_krnl_1:s_axis_tcp_open_connection #--dk chipscope:${USER_KRNL}_1:s_axi_control # --dk chipscope:network_krnl_1:axis_net_tx 
+
+CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_port_status --dk chipscope:network_krnl_1:m_axis_tcp_notification --dk chipscope:network_krnl_1:m_axis_tcp_rx_meta  --dk chipscope:network_krnl_1:s_axis_tcp_read_pkg  --dk chipscope:network_krnl_1:s_axis_tcp_listen_port #--dk chipscope:network_krnl_1:axis_net_rx
+
+CLFLAGS += --config ./kernel/user_krnl/${USER_KRNL}/config_sp_${USER_KRNL}.txt --config ./scripts/network_krnl_mem.txt --config ./scripts/cmac_krnl_slr.txt
 
 # LDCLFLAGS += --kernel_frequency "0:250|1:250"
 # LDCLFLAGS += --profile_kernel stall:${USER_KRNL}:all:all
+
+#'estimate' for estimate report generation
+#'system' for system report generation
+ifneq ($(REPORT), no)
+CLFLAGS += --report estimate
+CLLDFLAGS += --report system
+endif
+
+#Generates profile summary report
+ifeq ($(PROFILE), yes)
+LDCLFLAGS += --profile_kernel data:${USER_KRNL}:all:all
+LDCFLAGS += --profile_kernel  stall:${USER_KRNL}:all:all
+LDCFALGS += --profile_kernel exec:${USER_KRNL}:all:all
+endif
 
 EXECUTABLE = ./host/host
 CMD_ARGS = $(BUILD_DIR)/${XCLBIN_NAME}.xclbin
@@ -183,7 +204,7 @@ clean:
 
 cleanall: clean
 	-$(RMDIR) build_dir* sd_card*
-	-$(RMDIR) _x.* *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ pl* start_simulation.sh *.xclbin
+	-$(RMDIR) _x.* *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ pl* start_simulation.sh *.xclbin _x
 	-$(RMDIR) ./tmp_kernel_pack* ./packaged_kernel* 
 
 

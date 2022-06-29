@@ -72,6 +72,8 @@ set_property -dict [list CONFIG.TDATA_NUM_BYTES {4} CONFIG.Component_Name {axis_
 create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_48 
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {6} CONFIG.Component_Name {axis_register_slice_48}] [get_ips axis_register_slice_48]
 
+create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_72
+set_property -dict [list CONFIG.TDATA_NUM_BYTES {9} CONFIG.Component_Name {axis_register_slice_72}] [get_ips axis_register_slice_72]
 
 create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_88 
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {11} CONFIG.Component_Name {axis_register_slice_88}] [get_ips axis_register_slice_88]

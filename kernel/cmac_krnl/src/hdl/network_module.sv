@@ -129,7 +129,7 @@ cmac_axis_wrapper cmac_wrapper_inst
 
 // axis_data_reg inst_reg_rx (.aclk(net_clk), .aresetn(aresetn), .s_axis(rx_axis), .m_axis(m_axis_net_rx)); 
 
-axis_data_reg_array #(.N_STAGES(4)) inst_reg_array_rx (.aclk(net_clk), .aresetn(aresetn), .s_axis(rx_axis), .m_axis(m_axis_net_rx));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_array_rx (.aclk(net_clk), .aresetn(aresetn), .s_axis(rx_axis), .m_axis(m_axis_net_rx));
 // TX
 // Pad Ethernet frames to at least 64B
 // Packet FIFO, makes sure that whole packet is passed in a single burst to the CMAC
@@ -150,7 +150,7 @@ axis_data_reg_array #(.N_STAGES(4)) inst_reg_array_rx (.aclk(net_clk), .aresetn(
 // );
 
 // axis_data_reg inst_reg_tx (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_pkg_to_fifo), .m_axis(tx_axis)); 
-axis_data_reg_array #(.N_STAGES(4)) inst_reg_array_tx (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_pkg_to_fifo), .m_axis(tx_axis));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_array_tx (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_pkg_to_fifo), .m_axis(tx_axis));
 
 
 axis_pkg_fifo_512 axis_pkg_fifo_512 (
@@ -168,7 +168,7 @@ axis_pkg_fifo_512 axis_pkg_fifo_512 (
   .m_axis_tlast(axis_tx_pkg_to_fifo.last)
 );
 
-axis_data_reg_array #(.N_STAGES(3)) inst_reg_array_ethernet_frame_padding (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_padding_to_fifo), .m_axis(axis_tx_padding_to_fifo_reg));
+axis_data_reg_array #(.N_STAGES(8)) inst_reg_array_ethernet_frame_padding (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_padding_to_fifo), .m_axis(axis_tx_padding_to_fifo_reg));
 
 
 ethernet_frame_padding_512_ip ethernet_frame_padding_inst (

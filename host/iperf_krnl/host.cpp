@@ -47,7 +47,7 @@ void wait_for_enter(const std::string &msg) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        std::cout << "Usage: " << argv[0] << " <XCLBIN File>  [<Server IP address in format 10.1.212.121> <#Connection> <Seconds>]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " <XCLBIN File>  [<Server IP address in format 10.1.212.121> <#Connection> <Seconds> <local_IP> <boardNum> <packetWord>]" << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -105,14 +105,40 @@ int main(int argc, char **argv) {
         std::cout << "Failed to program any device found, exit!\n";
         exit(EXIT_FAILURE);
     }
+
+    uint32_t local_IP = IP_ADDR;
+    uint32_t boardNum = BOARD_NUMBER;
     
-    wait_for_enter("\nPress ENTER to continue after setting up ILA trigger...");
+    if (argc >= 6)
+    {
+        std::string s = argv[5];
+        std::string delimiter = ".";
+        int ip [4];
+        size_t pos = 0;
+        std::string token;
+        int i = 0;
+        while ((pos = s.find(delimiter)) != std::string::npos) {
+            token = s.substr(0, pos);
+            ip [i] = stoi(token);
+            s.erase(0, pos + delimiter.length());
+            i++;
+        }
+        ip[i] = stoi(s); 
+        local_IP = ip[3] | (ip[2] << 8) | (ip[1] << 16) | (ip[0] << 24);
+    }
+
+    if (argc >= 7)
+    {
+        boardNum = strtol(argv[6], NULL, 10);
+    }
+
+    printf("local_IP:%x, boardNum:%d\n", local_IP, boardNum);
 
 
     // Set network kernel arguments
-    OCL_CHECK(err, err = network_kernel.setArg(0, IP_ADDR)); // Default IP address
-    OCL_CHECK(err, err = network_kernel.setArg(1, BOARD_NUMBER)); // Board number
-    OCL_CHECK(err, err = network_kernel.setArg(2, ARP)); // ARP lookup
+    OCL_CHECK(err, err = network_kernel.setArg(0, local_IP)); // Default IP address
+    OCL_CHECK(err, err = network_kernel.setArg(1, boardNum)); // Board number
+    OCL_CHECK(err, err = network_kernel.setArg(2, local_IP)); // ARP lookup
 
     //TCP Tx Engine Buffering 
     OCL_CHECK(err,
@@ -136,6 +162,7 @@ int main(int argc, char **argv) {
     printf("enqueued network kernel\n");
     OCL_CHECK(err, err = q.finish());
 
+    wait_for_enter("\nPress ENTER to continue after setting up ILA trigger...");
     
     // Set iperf kernel arguments
 
@@ -176,14 +203,20 @@ int main(int argc, char **argv) {
     if(argc >= 5)
         timeInSeconds = strtol(argv[4], NULL, 10);
 
+    if (argc >= 8)
+    {
+        numPacketWord = strtol(argv[7], NULL, 10);
+    }
+
     
     //Default Clocking frequency 250MHz
     uint64_t timeInCycles =( (uint64_t) timeInSeconds * 250000000);
 
 
     printf("number of connection:%d\n",connection);
-    printf("IP_ADDR:%x\n", baseIpAddr);
+    printf("Target IP_ADDR:%x\n", baseIpAddr);
     printf("time in seconds: %d, time in cycles:%llu\n", timeInSeconds, timeInCycles);
+    printf("packetWord:%d \n", numPacketWord);
 
     //Set user Kernel Arguments
     OCL_CHECK(err, err = user_kernel.setArg(0, connection));

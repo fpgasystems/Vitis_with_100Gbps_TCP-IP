@@ -54,7 +54,13 @@ set words [split $device "_"]
 set board [lindex $words 1]
 
 if {[string compare -nocase $board "u280"] == 0} {
-set projPart "xcu280-fsvh2892-2L-e"
+    set projPart "xcu280-fsvh2892-2L-e"
+} elseif {[string compare -nocase $board "u250"] == 0} {
+    set projPart "xcu250-figd2104-2L-e"
+} elseif {[string compare -nocase $board "u50"] == 0} {
+    set projPart "xcu50-fsvh2104-2-e"
+} elseif {[string compare -nocase $board "u55c"] == 0} {
+    set projPart "xcu55c-fsvh2892-2L-e"
 } else {
     puts "Unknown board $board"
     exit 
@@ -65,7 +71,6 @@ create_project -force $projName $path_to_tmp_project -part $projPart
 
 add_files -norecurse [glob $path_to_hdl/hdl/*.v $path_to_hdl/hdl/*.sv $path_to_hdl/hdl/*.svh ]
 add_files -norecurse [glob $path_to_common/types/*.v $path_to_common/types/*.sv $path_to_common/types/*.svh ]
-#add_files -norecurse [glob /home/zhenhao/vitis_network/build/kernel/user_krnl/iperf_krnl/src/hls/iperf_client_prj/solution1/impl/ip/hdl/verilog/*.v]
 
 set_property top user_krnl [current_fileset]
 update_compile_order -fileset sources_1
@@ -96,7 +101,7 @@ ipx::unload_core $path_to_packaged/component.xml
 ipx::edit_ip_in_project -upgrade true -name tmp_edit_project -directory $path_to_packaged $path_to_packaged/component.xml
 set_property core_revision 1 [ipx::current_core]
 foreach up [ipx::get_user_parameters] {
-  ipx::remove_user_parameter [get_property NAME $up] [ipx::current_core]
+    ipx::remove_user_parameter [get_property NAME $up] [ipx::current_core]
 }
 set_property sdx_kernel true [ipx::current_core]
 set_property sdx_kernel_type rtl [ipx::current_core]
