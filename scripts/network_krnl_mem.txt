@@ -1,3 +1,0 @@
-[connectivity] 
-sp=network_krnl_1.m00_axi:HBM[15]
-sp=network_krnl_1.m01_axi:HBM[15]
