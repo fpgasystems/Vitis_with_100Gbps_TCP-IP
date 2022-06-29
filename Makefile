@@ -42,6 +42,9 @@ KRNL_1 := network_krnl
 KRNL_2 := ${USER_KRNL}
 KRNL_3 := cmac_krnl
 
+CMAC_KRNL=vitis_network/_x.hw.$(XSA)/cmac_krnl.xo
+NETWORK_KRNL=vitis_network/_x.hw.$(XSA)/network_krnl.xo
+
 USER_KRNL_MODE ?= rtl
 
 include ./utils.mk
@@ -206,5 +209,17 @@ cleanall: clean
 	-$(RMDIR) build_dir* sd_card*
 	-$(RMDIR) _x.* *xclbin.run_summary qemu-memory-_* emulation/ _vimage/ pl* start_simulation.sh *.xclbin _x
 	-$(RMDIR) ./tmp_kernel_pack* ./packaged_kernel* 
+
+cmac_krnl: $(CMAC_KRNL)
+network_krnl: $(NETWORK_KRNL)
+
+$(CMAC_KRNL): kernel/cmac_krnl/cmac_krnl.xml kernel/cmac_krnl/package_cmac_krnl.tcl scripts/gen_xo.tcl kernel/cmac_krnl/src/hdl/*.sv
+	mkdir -p $(TEMP_DIR)
+	vivado -mode batch -source scripts/gen_xo.tcl -tclargs $(TEMP_DIR)/cmac_krnl.xo cmac_krnl $(TARGET) $(DEVICE) $(XSA) kernel/cmac_krnl/cmac_krnl.xml kernel/cmac_krnl/package_cmac_krnl.tcl
+
+$(NETWORK_KRNL): kernel/network_krnl/network_krnl.xml kernel/network_krnl/package_network_krnl.tcl scripts/gen_xo.tcl kernel/network_krnl/src/hdl/*.sv
+	mkdir -p $(TEMP_DIR)
+	vivado -mode batch -source scripts/gen_xo.tcl -tclargs $(TEMP_DIR)/network_krnl.xo network_krnl $(TARGET) $(DEVICE) $(XSA) kernel/network_krnl/network_krnl.xml kernel/network_krnl/package_network_krnl.tcl
+
 
 
