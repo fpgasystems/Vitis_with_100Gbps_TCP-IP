@@ -1448,7 +1448,7 @@ void tie_off_tcp_rx(hls::stream<pkt128>& s_axis_tcp_notification,
 }
 
 void tie_off_tcp_open_connection(hls::stream<pkt64>& m_axis_tcp_open_connection, 
-               hls::stream<pkt32>& s_axis_tcp_open_status)
+               hls::stream<pkt128>& s_axis_tcp_open_status)
 {
      hls::stream<ipTuple> openConnection;
      pkt64 openConnection_pkt;
@@ -1463,7 +1463,7 @@ void tie_off_tcp_open_connection(hls::stream<pkt64>& m_axis_tcp_open_connection,
      openStatus open_status_data;
      if (!s_axis_tcp_open_status.empty())
      {
-          pkt32 open_status_pkt = s_axis_tcp_open_status.read();
+          pkt128 open_status_pkt = s_axis_tcp_open_status.read();
           open_status_data.sessionID = open_status_pkt.data(15,0);
           open_status_data.success = open_status_pkt.data(16,16);
      }
