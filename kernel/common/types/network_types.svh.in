@@ -22,7 +22,7 @@ parameter UDP_META_WIDTH = 176;
 
 // TCP/IP
 parameter TCP_STACK_EN = ${TCP_STACK_EN};
-parameter TCP_RX_BYPASS_EN = ${TCP_STACK_RX_DDR_BYPASS_EN};
+parameter TCP_RX_BYPASS_EN = ${FNS_TCP_STACK_RX_DDR_BYPASS_EN};
 
 //UDP/IP
 parameter UDP_STACK_EN = ${UDP_STACK_EN};

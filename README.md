@@ -1,6 +1,6 @@
-# Vitis with 100 Gbps TCP/IP Network Stack
+# EasyNet: 100 Gbps TCP/IP Network Stack for HLS
 
-This repository provides TCP/IP network support at 100 Gbit/s in Vitis and provides several examples to demonstrate the usage. 
+This repository provides TCP/IP network support at 100 Gbit/s in Vitis-HLS and provides several examples to demonstrate the usage. 
 
 ## Architecture Overview
 
@@ -55,17 +55,17 @@ Setup the TCP/IP stack HLS IPs:
 
     mkdir build
     cd build
-    cmake .. -DFDEV_NAME=u280 -DTCP_STACK_EN=1 -DTCP_STACK_RX_DDR_BYPASS_EN=1 
-    make installip
+    cmake .. -DFDEV_NAME=u280 -DTCP_STACK_EN=1
+    make ip
 
 
 TCP/IP stack options:
 
 | Name                   | Values                       | Desription                                                                         |
 |------------------------|------------------------------|------------------------------------------------------------------------------------|
-| TCP\_STACK\_MAX\_SESSIONS        | Integer                        | Maximum number of session supported by the stack. Each session requires a 64 KB Tx and Rx buffer in off-chip memory and state tables using on-chip memory. The choice of this parameter is a trade-off between maximum supported session count and resource usage. ; Default: 1000                                                                         |
-| TCP\_STACK\_RX\_DDR\_BYPASS\_EN      |         <0,1>               | Bypassing Rx packets buffering. If user application can consume Rx packets at line-rate, setting this parameter allows the `network` kernel forward packets directly to the `user` kernel, which reduces global memory usage and latency. ; Default: 1                      |
-| TCP\_STACK\_WINDOW\_SCALING\_EN |<0,1>                       | Enable TCP window scaling; Default: 0   
+| FNS\_TCP\_STACK\_MAX\_SESSIONS        | Integer                        | Maximum number of session supported by the stack. Each session requires a 64 KB Tx and Rx buffer in off-chip memory and state tables using on-chip memory. The choice of this parameter is a trade-off between maximum supported session count and resource usage. ; Default: 1000                                                                         |
+| FNS\_TCP\_STACK\_RX\_DDR\_BYPASS\_EN      |         <0,1>               | Bypassing Rx packets buffering. If user application can consume Rx packets at line-rate, setting this parameter allows the `network` kernel forward packets directly to the `user` kernel, which reduces global memory usage and latency. ; Default: 1                      |
+| FNS\_TCP\_STACK\_WINDOW\_SCALING\_EN |<0,1>                       | Enable TCP window scaling; Default: 1   
 
 ## Create Design
 

@@ -171,7 +171,7 @@ axis_pkg_fifo_512 axis_pkg_fifo_512 (
 axis_data_reg_array #(.N_STAGES(8)) inst_reg_array_ethernet_frame_padding (.aclk(net_clk), .aresetn(aresetn), .s_axis(axis_tx_padding_to_fifo), .m_axis(axis_tx_padding_to_fifo_reg));
 
 
-ethernet_frame_padding_512_ip ethernet_frame_padding_inst (
+ethernet_frame_padding_ip ethernet_frame_padding_inst (
   .m_axis_TVALID(axis_tx_padding_to_fifo.valid),
   .m_axis_TREADY(axis_tx_padding_to_fifo.ready),
   .m_axis_TDATA(axis_tx_padding_to_fifo.data),

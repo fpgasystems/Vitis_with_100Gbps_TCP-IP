@@ -51,7 +51,7 @@ include ./utils.mk
 POSTSYSLINKTCL ?= $(shell readlink -f ./scripts/post_sys_link.tcl)
 CONFIGLINKTCL ?= $(shell readlink -f ./scripts/compile.cfg)
 
-IPREPOPATH ?= ./build/fpga-network-stack/iprepo
+IPREPOPATH ?= ./build/ip_repo
 
 XSA := $(call device2xsa, $(DEVICE))
 TEMP_DIR := ./_x.$(TARGET).$(XSA)
@@ -100,9 +100,9 @@ endif
 $(info $$DEVICE is [${DEVICE}])
 $(info $$POSTSYSLINKTCL is [${POSTSYSLINKTCL}])
 CLFLAGS += --advanced.param compiler.userPostSysLinkTcl=$(POSTSYSLINKTCL) #--xp param:compiler.userPostSysLinkTcl=$(POSTSYSLINKTCL)
-CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_open_status --dk chipscope:network_krnl_1:s_axis_tcp_tx_meta --dk chipscope:network_krnl_1:m_axis_tcp_tx_status  --dk chipscope:network_krnl_1:s_axis_tcp_open_connection #--dk chipscope:${USER_KRNL}_1:s_axi_control # --dk chipscope:network_krnl_1:axis_net_tx 
+CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_open_status --dk chipscope:network_krnl_1:s_axis_tcp_tx_meta --dk chipscope:network_krnl_1:m_axis_tcp_tx_status  --dk chipscope:network_krnl_1:s_axis_tcp_open_connection --dk chipscope:network_krnl_1:axis_net_tx --dk chipscope:network_krnl_1:m00_axi
 
-CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_port_status --dk chipscope:network_krnl_1:m_axis_tcp_notification --dk chipscope:network_krnl_1:m_axis_tcp_rx_meta  --dk chipscope:network_krnl_1:s_axis_tcp_read_pkg  --dk chipscope:network_krnl_1:s_axis_tcp_listen_port #--dk chipscope:network_krnl_1:axis_net_rx
+CLFLAGS += --dk chipscope:network_krnl_1:m_axis_tcp_port_status --dk chipscope:network_krnl_1:m_axis_tcp_notification --dk chipscope:network_krnl_1:m_axis_tcp_rx_meta  --dk chipscope:network_krnl_1:s_axis_tcp_read_pkg  --dk chipscope:network_krnl_1:s_axis_tcp_listen_port --dk chipscope:network_krnl_1:axis_net_rx
 
 CLFLAGS += --config ./kernel/user_krnl/${USER_KRNL}/config_sp_${USER_KRNL}.txt --config ./scripts/network_krnl_mem.txt --config ./scripts/cmac_krnl_slr.txt
 

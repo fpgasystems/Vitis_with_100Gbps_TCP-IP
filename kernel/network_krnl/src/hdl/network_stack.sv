@@ -189,9 +189,9 @@ wire [31:0] set_ip_addr_data;
 reg[31:0] local_ip_address;
 wire[31:0]ip_address_used;
 
-wire set_board_number_valid;
-wire[3:0] set_board_number_data;
-reg[3:0] board_number;
+wire set_mac_addr_valid;
+wire[47:0] set_mac_addr_data;
+reg[47:0] mac_addr;
 
 // IPv6 lookup
 wire axis_ipv6_res_rsp_TVALID;
@@ -257,13 +257,13 @@ begin
         link_local_ipv6_address <= 0;
     end
     else begin
-        mie_mac_address <= {MAC_ADDRESS[47:44], (MAC_ADDRESS[43:40]+board_number), MAC_ADDRESS[39:0]};
-        arp_mac_address <= {MAC_ADDRESS[47:44], (MAC_ADDRESS[43:40]+board_number), MAC_ADDRESS[39:0]};
-        ipv6_mac_address <= {MAC_ADDRESS[47:44], (MAC_ADDRESS[43:40]+board_number), MAC_ADDRESS[39:0]};
+        mie_mac_address <= mac_addr;
+        arp_mac_address <= mac_addr;
+        ipv6_mac_address <= mac_addr;
         //link_local_ipv6_address[127:80] <= ipv6_mac_address;
         //link_local_ipv6_address[15:0] <= 16'h80fe; // fe80
         //link_local_ipv6_address[79:16] <= 64'h0000_0000_0000_0000;
-        link_local_ipv6_address <= {IPV6_ADDRESS[127:120]+board_number, IPV6_ADDRESS[119:0]};
+        link_local_ipv6_address <= {IPV6_ADDRESS[127:120], IPV6_ADDRESS[119:0]};
         if (DHCP_EN == 1) begin
             if (dhcp_ip_address_en == 1'b1) begin
                 iph_ip_address <= dhcp_ip_address;
@@ -624,7 +624,7 @@ arp_server_subnet_ip arp_server_inst(
 always @(posedge net_clk) begin
     if (~net_aresetn_r) begin
         local_ip_address <= 32'hD1D4010B;
-        board_number <= 0;
+        mac_addr <= 0;
     end
     else begin
         if (set_ip_addr_valid) begin
@@ -633,8 +633,13 @@ always @(posedge net_clk) begin
             local_ip_address[23:16] <= set_ip_addr_data[15:8];
             local_ip_address[31:24] <= set_ip_addr_data[7:0];
         end
-        if (set_board_number_valid) begin
-            board_number <= set_board_number_data;
+        if (set_mac_addr_valid) begin
+            mac_addr[7:0] <= set_mac_addr_data[47:40];
+            mac_addr[15:8] <= set_mac_addr_data[39:32];
+            mac_addr[23:16] <= set_mac_addr_data[31:24];
+            mac_addr[31:24] <= set_mac_addr_data[23:16];
+            mac_addr[39:32] <= set_mac_addr_data[15:8];
+            mac_addr[47:40] <= set_mac_addr_data[7:0];
         end
     end
 end
@@ -939,7 +944,7 @@ assign ap_ready = ap_done;
 
 
 assign set_ip_addr_valid = ap_start_pulse;
-assign set_board_number_valid = ap_start_pulse;
+assign set_mac_addr_valid = ap_start_pulse;
 assign axis_host_arp_lookup_request.valid = ap_start_pulse; //TODO: what about axis_host_arp_lookup_request.ready?
 assign axis_host_arp_lookup_reply.ready = 1'b1;
 
@@ -973,7 +978,7 @@ network_control_s_axi #(
     .interrupt(interrupt),
 
     .ip_addr(set_ip_addr_data),
-    .board_number(set_board_number_data),
+    .mac_addr(set_mac_addr_data),
     .arp(axis_host_arp_lookup_request.data),
     .axi00_ptr0(axi00_ptr0),
     .axi01_ptr0(axi01_ptr0),
@@ -1056,7 +1061,7 @@ vio_network vio_network(
   .probe_in15(icmp_rx_pkg_counter),
   .probe_in16(icmp_tx_pkg_counter),
   .probe_in17(axis_stream_down_counter),
-  .probe_in18(board_number)
+  .probe_in18(mac_addr)
 
 );
 

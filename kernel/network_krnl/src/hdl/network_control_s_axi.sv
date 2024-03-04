@@ -39,7 +39,7 @@
 
 module network_control_s_axi
 #(parameter
-    C_S_AXI_ADDR_WIDTH = 6,
+    C_S_AXI_ADDR_WIDTH = 7,
     C_S_AXI_DATA_WIDTH = 32
 )(
     input  wire                          ACLK,
@@ -68,7 +68,7 @@ module network_control_s_axi
     input  wire                          ap_ready,
     input  wire                          ap_idle,
     output wire [31:0]                   ip_addr,
-    output wire [31:0]                   board_number,
+    output wire [63:0]                   mac_addr,
     output wire [31:0]                   arp,
     output wire [63:0]                   axi00_ptr0,
     output wire [63:0]                   axi01_ptr0
@@ -95,42 +95,45 @@ module network_control_s_axi
 // 0x10 : Data signal of ip_addr
 //        bit 31~0 - ip_addr[31:0] (Read/Write)
 // 0x14 : reserved
-// 0x18 : Data signal of board_number
-//        bit 31~0 - board_number[31:0] (Read/Write)
-// 0x1c : reserved
-// 0x20 : Data signal of arp
+// 0x18 : Data signal of mac_addr
+//        bit 31~0 - mac_addr[31:0] (Read/Write)
+// 0x1c : Data signal of mac_addr
+//        bit 63~32 - mac_addr[63:32] (Read/Write)
+// 0x20 : reserved
+// 0x24 : Data signal of arp
 //        bit 31~0 - arp[31:0] (Read/Write)
-// 0x24 : reserved
-// 0x28 : Data signal of axi00_ptr0
-//        bit 31~0 - axi00_ptr0[31:0] (Read/Write)
+// 0x28 : reserved
 // 0x2c : Data signal of axi00_ptr0
-//        bit 31~0 - axi00_ptr0[63:32] (Read/Write)
-// 0x30 : reserved
-// 0x34 : Data signal of axi01_ptr0
-//        bit 31~0 - axi01_ptr0[31:0] (Read/Write)
+//        bit 31~0 - axi00_ptr0[31:0] (Read/Write)
+// 0x30 : Data signal of axi00_ptr0
+//        bit 63~32 - axi00_ptr0[63:32] (Read/Write)
+// 0x34 : reserved
 // 0x38 : Data signal of axi01_ptr0
-//        bit 31~0 - axi01_ptr0[63:32] (Read/Write)
-// 0x3c : reserved
+//        bit 31~0 - axi01_ptr0[31:0] (Read/Write)
+// 0x3c : Data signal of axi01_ptr0
+//        bit 63~32 - axi01_ptr0[63:32] (Read/Write)
+// 0x40 : reserved
 // (SC = Self Clear, COR = Clear on Read, TOW = Toggle on Write, COH = Clear on Handshake)
 
 //------------------------Parameter----------------------
 localparam
-    ADDR_AP_CTRL             = 6'h00,
-    ADDR_GIE                 = 6'h04,
-    ADDR_IER                 = 6'h08,
-    ADDR_ISR                 = 6'h0c,
-    ADDR_IP_ADDR_DATA_0      = 6'h10,
-    ADDR_IP_ADDR_CTRL        = 6'h14,
-    ADDR_BOARD_NUMBER_DATA_0 = 6'h18,
-    ADDR_BOARD_NUMBER_CTRL   = 6'h1c,
-    ADDR_ARP_DATA_0          = 6'h20,
-    ADDR_ARP_CTRL            = 6'h24,
-    ADDR_AXI00_PTR0_DATA_0   = 6'h28,
-    ADDR_AXI00_PTR0_DATA_1   = 6'h2c,
-    ADDR_AXI00_PTR0_CTRL     = 6'h30,
-    ADDR_AXI01_PTR0_DATA_0   = 6'h34,
-    ADDR_AXI01_PTR0_DATA_1   = 6'h38,
-    ADDR_AXI01_PTR0_CTRL     = 6'h3c,
+    ADDR_AP_CTRL             = 7'h00,
+    ADDR_GIE                 = 7'h04,
+    ADDR_IER                 = 7'h08,
+    ADDR_ISR                 = 7'h0c,
+    ADDR_IP_ADDR_DATA_0      = 7'h10,
+    ADDR_IP_ADDR_CTRL        = 7'h14,
+    ADDR_MAC_ADDR_DATA_0     = 7'h18,
+    ADDR_MAC_ADDR_DATA_1     = 7'h1c,
+    ADDR_MAC_ADDR_CTRL       = 7'h20,
+    ADDR_ARP_DATA_0          = 7'h24,
+    ADDR_ARP_CTRL            = 7'h28,
+    ADDR_AXI00_PTR0_DATA_0   = 7'h2c,
+    ADDR_AXI00_PTR0_DATA_1   = 7'h30,
+    ADDR_AXI00_PTR0_CTRL     = 7'h34,
+    ADDR_AXI01_PTR0_DATA_0   = 7'h38,
+    ADDR_AXI01_PTR0_DATA_1   = 7'h3c,
+    ADDR_AXI01_PTR0_CTRL     = 7'h40,
     WRIDLE                   = 2'd0,
     WRDATA                   = 2'd1,
     WRRESP                   = 2'd2,
@@ -138,7 +141,7 @@ localparam
     RDIDLE                   = 2'd0,
     RDDATA                   = 2'd1,
     RDRESET                  = 2'd2,
-    ADDR_BITS         = 6;
+    ADDR_BITS                = 7;
 
 //------------------------Local signal-------------------
     reg  [1:0]                    wstate = WRRESET;
@@ -162,7 +165,7 @@ localparam
     reg  [1:0]                    int_ier = 2'b0;
     reg  [1:0]                    int_isr = 2'b0;
     reg  [31:0]                   int_ip_addr = 'b0;
-    reg  [31:0]                   int_board_number = 'b0;
+    reg  [63:0]                   int_mac_addr = 'b0;
     reg  [31:0]                   int_arp = 'b0;
     reg  [63:0]                   int_axi00_ptr0 = 'b0;
     reg  [63:0]                   int_axi01_ptr0 = 'b0;
@@ -278,8 +281,11 @@ always @(posedge ACLK) begin
                 ADDR_IP_ADDR_DATA_0: begin
                     rdata <= int_ip_addr[31:0];
                 end
-                ADDR_BOARD_NUMBER_DATA_0: begin
-                    rdata <= int_board_number[31:0];
+                ADDR_MAC_ADDR_DATA_0: begin
+                    rdata <= int_mac_addr[31:0];
+                end
+                ADDR_MAC_ADDR_DATA_1: begin
+                    rdata <= int_mac_addr[63:32];
                 end
                 ADDR_ARP_DATA_0: begin
                     rdata <= int_arp[31:0];
@@ -306,7 +312,7 @@ end
 assign interrupt    = int_gie & (|int_isr);
 assign ap_start     = int_ap_start;
 assign ip_addr      = int_ip_addr;
-assign board_number = int_board_number;
+assign mac_addr     = int_mac_addr;
 assign arp          = int_arp;
 assign axi00_ptr0   = int_axi00_ptr0;
 assign axi01_ptr0   = int_axi01_ptr0;
@@ -416,25 +422,25 @@ always @(posedge ACLK) begin
     end
 end
 
-// int_board_number[31:0]
+// int_mac_addr[31:0]
 always @(posedge ACLK) begin
     if (ARESET)
-        int_board_number[31:0] <= 0;
+        int_mac_addr[31:0] <= 0;
     else if (ACLK_EN) begin
-        if (w_hs && waddr == ADDR_BOARD_NUMBER_DATA_0)
-            int_board_number[31:0] <= (WDATA[31:0] & wmask) | (int_board_number[31:0] & ~wmask);
+        if (w_hs && waddr == ADDR_MAC_ADDR_DATA_0)
+            int_mac_addr[31:0] <= (WDATA[31:0] & wmask) | (int_mac_addr[31:0] & ~wmask);
     end
 end
 
-// int_arp[31:0]
-// always @(posedge ACLK) begin
-//     if (ARESET)
-//         int_arp[31:0] <= 0;
-//     else if (ACLK_EN) begin
-//         if (w_hs && waddr == ADDR_ARP_DATA_0)
-//             int_arp[31:0] <= (WDATA[31:0] & wmask) | (int_arp[31:0] & ~wmask);
-//     end
-// end
+// int_mac_addr[63:32]
+always @(posedge ACLK) begin
+    if (ARESET)
+        int_mac_addr[63:32] <= 0;
+    else if (ACLK_EN) begin
+        if (w_hs && waddr == ADDR_MAC_ADDR_DATA_1)
+            int_mac_addr[63:32] <= (WDATA[31:0] & wmask) | (int_mac_addr[63:32] & ~wmask);
+    end
+end
 
 // int_arp[31:0]
 always @(posedge ACLK) begin

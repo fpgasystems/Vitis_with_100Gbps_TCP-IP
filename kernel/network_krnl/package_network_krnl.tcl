@@ -78,7 +78,7 @@ set_property top network_krnl [current_fileset]
 update_compile_order -fileset sources_1
 
 set __ip_list [get_property ip_repo_paths [current_project]]
-lappend __ip_list ./build/fpga-network-stack/iprepo
+lappend __ip_list ./build/ip_repo
 set_property ip_repo_paths $__ip_list [current_project]
 update_ip_catalog
 

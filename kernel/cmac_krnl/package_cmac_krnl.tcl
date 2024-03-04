@@ -77,7 +77,7 @@ update_compile_order -fileset sources_1
 
 set __ip_list [get_property ip_repo_paths [current_project]]
 
-lappend __ip_list ./build/fpga-network-stack/iprepo
+lappend __ip_list ./build/ip_repo
 set_property ip_repo_paths $__ip_list [current_project]
 update_ip_catalog
 
@@ -87,7 +87,7 @@ set_property -dict [list CONFIG.TDATA_NUM_BYTES {64} CONFIG.HAS_TKEEP {1} CONFIG
 create_ip -name axis_data_fifo -vendor xilinx.com -library ip -module_name axis_pkg_fifo_512 
 set_property -dict [list CONFIG.TDATA_NUM_BYTES {64} CONFIG.FIFO_MODE {2} CONFIG.HAS_TKEEP {1} CONFIG.HAS_TLAST {1} CONFIG.Component_Name {axis_pkg_fifo_512}] [get_ips axis_pkg_fifo_512]
 
-create_ip -name ethernet_frame_padding_512 -vendor ethz.systems.fpga -library hls -version 0.1 -module_name ethernet_frame_padding_512_ip 
+create_ip -name ethernet_frame_padding -vendor ethz.systems.fpga -library hls -version 0.2 -module_name ethernet_frame_padding_ip 
 
 # Default GT reference frequency
 set gt_ref_clk 156.25

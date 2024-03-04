@@ -116,7 +116,7 @@ set_property -dict [list CONFIG.S_TDATA_NUM_BYTES {32} CONFIG.M_TDATA_NUM_BYTES 
 
 #HLS IP cores
 
-create_ip -name toe -vendor ethz.systems -library hls -version 1.6 -module_name toe_ip 
+create_ip -name toe -vendor ethz.systems.fpga -library hls -version 1.6 -module_name toe_ip 
 update_compile_order -fileset sources_1
 
 create_ip -name ip_handler -vendor ethz.systems.fpga -library hls -version 2.0 -module_name ip_handler_ip 
@@ -128,7 +128,7 @@ update_compile_order -fileset sources_1
 create_ip -name icmp_server -vendor xilinx.labs -library hls -version 1.67 -module_name icmp_server_ip 
 update_compile_order -fileset sources_1
 
-#create_ip -name echo_server_application -vendor ethz.systems -library hls -version 1.2 -module_name echo_server_application_ip 
+#create_ip -name echo_server_application -vendor ethz.systems.fpga -library hls -version 1.2 -module_name echo_server_application_ip 
 
 #create_ip -name iperf_client -vendor ethz.systems.fpga -library hls -version 1.0 -module_name iperf_client_ip 
 
