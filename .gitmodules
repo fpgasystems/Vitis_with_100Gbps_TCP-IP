@@ -1,0 +1,3 @@
+[submodule "fpga-network-stack"]
+	path = fpga-network-stack
+	url = https://github.com/fpgasystems/fpga-network-stack.git
